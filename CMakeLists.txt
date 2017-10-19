@@ -36,5 +36,8 @@ catkin_package(CATKIN_DEPENDS
 # Mediator
 ########################################################################
 
+add_executable(test_wm_mediator ${PROJECT_SOURCE_DIR}/src/test.cpp ${HEADER_FILES})
+target_link_libraries(test_wm_mediator ${LIBS} ${catkin_LIBRARIES})
+
 add_executable(ropod_wm_mediator_demo ${PROJECT_SOURCE_DIR}/src/wm_mediator.cpp)
 target_link_libraries(ropod_wm_mediator_demo ${LIBS}  ${catkin_LIBRARIES} yaml-cpp)
