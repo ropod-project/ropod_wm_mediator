@@ -16,3 +16,15 @@
 - OUTSIDE_ELEVATOR:
     position: [3.7, 2.3, 0.0]
     orientation: [1.0, 0.0, 0.0, 0.0]
+- CORRIDOR1:
+    position: [0.5, 2.6, 0.0]
+    orientation: [0.0, 0.0, -0.998, 0.0623]
+- MOBIDIK_ROOM_ENTRANCE:
+    position: [-0.164579, 1.641281, 0.0]
+    orientation: [0.0, 0.0, -0.6669, 0.74513]
+- CORRIDOR2_CORNER:
+    position: [-1.6, 1.27, 0.0]
+    orientation: [0.0, 0.0, -0.998, 0.0623]
+- CLOSE_TO_ELEVATOR:
+    position: [-2.5, 1.81, 0.0]
+    orientation: [0.0, 0.0, -0.998, 0.0623]
