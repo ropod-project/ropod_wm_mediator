@@ -1,0 +1,26 @@
+# top level: Final goal / semantic location
+# second level: areas
+# third level: waypoint
+- START:
+    - CORRIDOR:
+        - START
+- MOBIDIK:
+    - CORRIDOR:
+        - CORRIDOR1
+        - MOBIDIK_ROOM_ENTRANCE
+    - ROOM_MOBIDIK:
+        - MOBIDIK
+- ELEVATOR:
+    - CORRIDOR2:
+        - CORRIDOR2_CORNER
+        - CLOSE_TO_ELEVATOR
+    - FRONT_ELEVATOR:
+        - ELEVATOR
+- TAKE_ELEVATOR:
+    - INSIDE_ELEVATOR:
+        - INSIDE_ELEVATOR1
+    - OUTSIDE_ELEVATOR:
+        - OUTSIDE_ELEVATOR
+- EXIT_ELEVATOR:
+    - OUTSIDE_ELEVATOR:
+        - OUTSIDE_ELEVATOR

@@ -1,0 +1,30 @@
+- START:
+    position: [15.4, 3.27, 0.0]
+    orientation: [0.0, 0.0, 0.99, 0.07]
+- MOBIDIK:
+    position: [10.64, 6.56, 0.0]
+    orientation: [0.0, 0.0, -0.77, 0.64]
+- ELEVATOR:
+    position: [-8.1, -0.87, 0.0]
+    orientation: [0.0, 0.0, 0.71, 0.71]
+- INSIDE_ELEVATOR1:
+    position: [-5.27, 0.025, 0.0]
+    orientation: [0.0, 0.0, 1.0, 0.012]
+- INSIDE_ELEVATOR2:
+    position: [-5.27, 0.025, 0.0]
+    orientation: [0.0, 0.0, 1.0, 0.012]
+- OUTSIDE_ELEVATOR:
+    position: [-8.12, -1.53, 0.0]
+    orientation: [0.0, 0.0, -0.72, 0.7]
+- CORRIDOR1:
+    position: [15.6, 3.1, 0.0]
+    orientation: [0.0, 0.0, 1.0, 0.0]
+- MOBIDIK_ROOM_ENTRANCE:
+    position: [11.1, 4.0, 0.0]
+    orientation: [0.0, 0.0, 0.92, 0.4]
+- CORRIDOR2_CORNER:
+    position: [8.8, -5.8, 0.0]
+    orientation: [0.0, 0.0, -1.0, 0.2]
+- CLOSE_TO_ELEVATOR:
+    position: [-7.61, -4.16, 0.0]
+    orientation: [0.0, 0.0, 0.96, 0.3]
