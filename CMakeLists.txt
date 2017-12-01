@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.6)
 
 project(ropod_wm_mediator)
 
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/ropod_wm_mediator/cmake")
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
