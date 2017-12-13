@@ -9,7 +9,7 @@
     orientation: [0.0, 0.0, 0.71, 0.71]
 - INSIDE_ELEVATOR1:
     position: [-5.27, 0.025, 0.0]
-    orientation: [0.0, 0.0, 1.0, 0.012]
+    orientation: [0.0, 0.0, 0.012, 1.0]
 - INSIDE_ELEVATOR2:
     position: [-5.27, 0.025, 0.0]
     orientation: [0.0, 0.0, 1.0, 0.012]
