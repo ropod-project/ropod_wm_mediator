@@ -13,7 +13,9 @@ class WMMediator(object):
 
     # get overpass server address
     api_url = rospy.get_param('~overpass_url')
-    osm_wm = OSMWMMediator(api_url)
+    ref_lat = rospy.get_param('~ref_latitude')
+    ref_lon = rospy.get_param('~ref_longitude')
+    osm_wm = OSMWMMediator(api_url, [ref_lat, ref_lon])
 
     '''
     Service for querying OSM database

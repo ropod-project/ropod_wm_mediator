@@ -1,13 +1,14 @@
 import overpass
+import utm
 import rospy
 from ropod_ros_msgs.srv import *
 from ropod_ros_msgs.msg import osm_node, osm_tag, osm_way, osm_relation, osm_member
 
 class OSMWMMediator(object):
 
-  def __init__(self, overpass_url):
+  def __init__(self, overpass_url, origin):
     rospy.init_node('WM_mediator')
-
+    self.origin = utm.from_latlon(origin[0], origin[1])
     self.api = overpass.API(endpoint=overpass_url)
 
   def query(self, req):
@@ -91,8 +92,7 @@ class OSMWMMediator(object):
   def get_node(self,data):
     n = osm_node()
     n.id = data.get('id')
-    n.x = data.get('lat')
-    n.y = data.get('lon')
+    [n.x, n.y] = self.osm_to_local([data.get('lat'),data.get('lon')])
     op_tags = []
     tags = data.get('tags')
     if tags is not None:
@@ -157,3 +157,10 @@ class OSMWMMediator(object):
         op_tags.append(t)
     r.tags = op_tags  
     return r
+
+  '''
+  Converts global coordinates to local cartesian coordinates
+  '''
+  def osm_to_local(self, node):
+    temp = utm.from_latlon(node[0], node[1]) 
+    return [temp[0] - self.origin[0], -(temp[1] - self.origin[1])]
