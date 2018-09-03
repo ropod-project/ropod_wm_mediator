@@ -15,6 +15,7 @@ Queries to OSM world model can be made using `/ropod_wm_mediator/osm_query` serv
   - 'area' - returns areas corresponding to given topology nodes (only for nodes)
   - 'graph' - returns graphs containing given topology nodes (only for nodes)
 
+Note: Update overpass url and global reference point in launch file before launching!
 
 #### Launch
 
