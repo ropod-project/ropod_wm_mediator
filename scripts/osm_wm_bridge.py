@@ -1,20 +1,20 @@
+#!/usr/bin/env python
 import overpass
 import utm
 import rospy
 from ropod_ros_msgs.srv import *
-from ropod_ros_msgs.msg import osm_node, osm_tag, osm_way, osm_relation, osm_member
+from ropod_ros_msgs.msg import OSMNode, OSMTag, OSMWay, OSMRelation, OSMMember
 
-class OSMWMMediator(object):
+class OSMWMBridge(object):
 
   def __init__(self, overpass_url, origin):
-    rospy.init_node('WM_mediator')
     self.origin = utm.from_latlon(origin[0], origin[1])
     self.api = overpass.API(endpoint=overpass_url)
 
   def query(self, req):
     query_string = self.construct_overpass_query(req.query_type, req.data_type, req.ids)
 
-    res = osm_queryResponse()
+    res = OSMQueryResponse()
     if query_string is not None:
       data = self.make_overpass_request(query_string)
       #print(data)
@@ -90,14 +90,14 @@ class OSMWMMediator(object):
   Converts node info obtained from overpass to ROS msg
   '''
   def get_node(self,data):
-    n = osm_node()
+    n = OSMNode()
     n.id = data.get('id')
     [n.x, n.y] = self.osm_to_local([data.get('lat'),data.get('lon')])
     op_tags = []
     tags = data.get('tags')
     if tags is not None:
       for tag in tags:
-        t = osm_tag()
+        t = OSMTag()
         t.key = tag
         t.value = tags.get(t.key)
         op_tags.append(t)
@@ -108,7 +108,7 @@ class OSMWMMediator(object):
   Converts way info obtained from overpass to ROS msg
   '''
   def get_way(self, data):
-    w = osm_way()
+    w = OSMWay()
     w.id = data.get('id')
     
     nodes = data.get('nodes')
@@ -122,7 +122,7 @@ class OSMWMMediator(object):
     tags = data.get('tags')
     if tags is not None:
       for tag in tags:
-        t = osm_tag()
+        t = OSMTag()
         t.key = tag
         t.value = tags.get(t.key)
         op_tags.append(t)
@@ -133,14 +133,14 @@ class OSMWMMediator(object):
   Converts relation info obtained from overpass to ROS msg
   '''
   def get_relation(self, data):
-    r = osm_relation()
+    r = OSMRelation()
     r.id = data.get('id')
 
     op_members = []
     members = data.get('members')
     if members is not None:
       for member in members:
-        m = osm_member()
+        m = OSMMember()
         m.id = member.get('ref')
         m.role = member.get('role')
         m.type = member.get('type')
@@ -151,7 +151,7 @@ class OSMWMMediator(object):
     tags = data.get('tags')
     if tags is not None:
       for tag in tags:
-        t = osm_tag()
+        t = OSMTag()
         t.key = tag
         t.value = tags.get(t.key)
         op_tags.append(t)
@@ -164,3 +164,16 @@ class OSMWMMediator(object):
   def osm_to_local(self, node):
     temp = utm.from_latlon(node[0], node[1]) 
     return [temp[0] - self.origin[0], -(temp[1] - self.origin[1])]
+
+
+if __name__ == "__main__":
+  rospy.init_node('OSM_WM_Bridge')
+
+  # get overpass server address
+  api_url = rospy.get_param('~overpass_url')
+  ref_lat = rospy.get_param('~ref_latitude')
+  ref_lon = rospy.get_param('~ref_longitude')
+  osm_wm_bridge = OSMWMBridge(api_url, [ref_lat, ref_lon])
+
+  s = rospy.Service('~osm_query', OSMQuery, osm_wm_bridge.query)
+  rospy.spin()
