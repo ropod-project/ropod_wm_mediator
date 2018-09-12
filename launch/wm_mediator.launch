@@ -1,12 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="waypoint_cmd_topic" default="ropod_demo_plan"/>
-    <arg name="semantic_waypoint_topic" default="/ropod_commands"/>
-    <arg name="robot_env" default="$(optenv ROBOT_ENV ropod-demo-amk-basement)"/>
-    <node name="ropod_wm_mediator" pkg="ropod_wm_mediator" type="ropod_wm_mediator_demo" output="screen">
-        <remap from="~plan" to="$(arg waypoint_cmd_topic)" />
-        <remap from="~goal" to="$(arg semantic_waypoint_topic)" />
-        <param name="semantic_waypoints" type="string" value="$(find ropod_wm_mediator)/config/waypoints_$(arg robot_env).yaml" />
-        <param name="locations" type="string" value="$(find ropod_wm_mediator)/config/locations.yaml" />
+    <node name="osm_bridge" pkg="ropod_wm_mediator" type="osm_wm_bridge.py" output="screen">
+        <param name="overpass_url" value="http://172.16.1.101:8000/api/interpreter" />
+        <param name="ref_latitude" value="50.1363485" />  <!-- same ref latitude should be used here and for map generation -->
+        <param name="ref_longitude" value="8.6474024" /> 
+    </node>  
+    <node name="ropod_wm_mediator" pkg="ropod_wm_mediator" type="ropod_wm_mediator" output="screen">
     </node>
 </launch>

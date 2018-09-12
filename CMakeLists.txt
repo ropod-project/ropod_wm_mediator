@@ -20,6 +20,9 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   roscpp
   ropod_ros_msgs
+  genmsg 
+  actionlib_msgs 
+  actionlib
 )
 
 include_directories(
@@ -30,6 +33,7 @@ include_directories(
 catkin_package(CATKIN_DEPENDS
   roscpp
   ropod_ros_msgs
+  actionlib_msgs
 )
 
 
@@ -41,6 +45,6 @@ add_executable(test_wm_mediator ${PROJECT_SOURCE_DIR}/src/test.cpp ${HEADER_FILE
 add_dependencies(test_wm_mediator ropod_ros_msgs_gencpp)
 target_link_libraries(test_wm_mediator ${LIBS} ${catkin_LIBRARIES})
 
-add_executable(ropod_wm_mediator_demo ${PROJECT_SOURCE_DIR}/src/wm_mediator.cpp)
-add_dependencies(ropod_wm_mediator_demo ropod_ros_msgs_gencpp)
-target_link_libraries(ropod_wm_mediator_demo ${LIBS}  ${catkin_LIBRARIES} yaml-cpp)
+add_executable(ropod_wm_mediator ${PROJECT_SOURCE_DIR}/src/wm_mediator.cpp)
+add_dependencies(ropod_wm_mediator ropod_ros_msgs_gencpp ${ropod_wm_mediator_EXPORTED_TARGETS})
+target_link_libraries(ropod_wm_mediator ${LIBS}  ${catkin_LIBRARIES} yaml-cpp)
