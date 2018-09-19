@@ -171,7 +171,7 @@ class OSMWMBridge(object):
   '''
   def osm_to_local(self, node):
       temp = utm.from_latlon(node[0], node[1]) 
-      return [temp[0] - self.origin[0], -(temp[1] - self.origin[1])]
+      return [temp[0] - self.origin[0], temp[1] - self.origin[1]]
 
 
 if __name__ == "__main__":
