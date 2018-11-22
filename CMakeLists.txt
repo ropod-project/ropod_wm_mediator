@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   roscpp
   ropod_ros_msgs
+  osm_bridge_ros_wrapper
   genmsg
   actionlib_msgs
   actionlib
@@ -33,6 +34,7 @@ include_directories(
 catkin_package(CATKIN_DEPENDS
   roscpp
   ropod_ros_msgs
+  osm_bridge_ros_wrapper
   actionlib_msgs
 )
 
