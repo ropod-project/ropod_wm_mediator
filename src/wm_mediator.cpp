@@ -7,9 +7,9 @@ void WMMediator::WMQueryResultCb(const actionlib::SimpleClientGoalState& state, 
 
 //NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
 
-WMMediator::WMMediator() : nh_("~"),get_waypt_position_server(nh_,"/get_waypt_position",
+WMMediator::WMMediator() : nh_("~"),get_waypt_position_server(nh_,"/get_position",
   boost::bind(&WMMediator::get_waypt_position_execute, this, _1),false),wm_query_ac("/wm_query", true), wm_query_result(),
-  get_waypt_shape_server(nh_,"/get_waypt_shape", boost::bind(&WMMediator::get_waypt_shape_execute, this, _1),false)
+  get_waypt_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_waypt_shape_execute, this, _1),false)
 { 
     get_waypt_position_server.start();
     get_waypt_shape_server.start();
@@ -40,7 +40,7 @@ void WMMediator::get_waypt_position_execute(const ropod_ros_msgs::GetWayptPositi
                 osm_bridge_ros_wrapper::Area area = wm_query_result.area;
                 topology_id = area.topology_id;
             }
-            else if (wm_query_result.output == "corridor")
+            else if (wm_query_result.output == "corridor" || wm_query_result.output == "junction")
             {
                 osm_bridge_ros_wrapper::Corridor corridor = wm_query_result.corridor;
                 topology_id = corridor.topology_id;
@@ -72,9 +72,7 @@ void WMMediator::get_waypt_position_execute(const ropod_ros_msgs::GetWayptPositi
             }
 
             req.id = topology_id;
-            req.ref = "point";
-            wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
-
+            req.type = "point";
             wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
             finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
 
@@ -87,9 +85,14 @@ void WMMediator::get_waypt_position_execute(const ropod_ros_msgs::GetWayptPositi
                     p.y = wm_query_result.point.y;
 
                     get_waypt_position_result.position = p;
+
+                    get_waypt_position_server.setSucceeded(get_waypt_position_result);
                 }
+                else
+                    get_waypt_position_server.setAborted(get_waypt_position_result);
             }
-            get_waypt_position_server.setSucceeded(get_waypt_position_result);
+            else
+                get_waypt_position_server.setAborted(get_waypt_position_result);
         }
         else
             get_waypt_position_server.setAborted(get_waypt_position_result);
@@ -105,6 +108,8 @@ void WMMediator::get_waypt_shape_execute(const ropod_ros_msgs::GetWayptShapeGoal
     osm_bridge_ros_wrapper::WMQueryGoal req;
     req.id = goal->id;
     req.ref = goal->ref;
+    req.type = goal->type;
+
     wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
     bool finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
     ropod_ros_msgs::GetWayptShapeResult get_waypt_shape_result;
@@ -118,7 +123,7 @@ void WMMediator::get_waypt_shape_execute(const ropod_ros_msgs::GetWayptShapeGoal
                 osm_bridge_ros_wrapper::Area area = wm_query_result.area;
                 shape_id = wm_query_result.area.shape_id;
             }
-            else if (wm_query_result.output == "corridor")
+            else if (wm_query_result.output == "corridor" || wm_query_result.output == "junction")
             {
                 osm_bridge_ros_wrapper::Corridor corridor = wm_query_result.corridor;
                 shape_id = wm_query_result.corridor.shape_id;
@@ -148,11 +153,8 @@ void WMMediator::get_waypt_shape_execute(const ropod_ros_msgs::GetWayptShapeGoal
                 osm_bridge_ros_wrapper::Door door = wm_query_result.door;
                 shape_id = wm_query_result.door.shape_id;
             }
-
             req.id = shape_id;
-            req.ref = "shape";
-            wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
-
+            req.type = "shape";
             wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
             finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
 
@@ -161,7 +163,6 @@ void WMMediator::get_waypt_shape_execute(const ropod_ros_msgs::GetWayptShapeGoal
                 if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
                 {
                     ropod_ros_msgs::Shape s;
-
                     for (auto it_pt = wm_query_result.shape.points.begin(); it_pt != wm_query_result.shape.points.end(); it_pt++)
                     {
                         ropod_ros_msgs::Position p;
@@ -170,9 +171,13 @@ void WMMediator::get_waypt_shape_execute(const ropod_ros_msgs::GetWayptShapeGoal
                         s.vertices.push_back(p);
                     }
                     get_waypt_shape_result.shape = s;
+                    get_waypt_shape_server.setSucceeded(get_waypt_shape_result);
                 }
+                else
+                    get_waypt_shape_server.setAborted(get_waypt_shape_result);
             }
-            get_waypt_shape_server.setSucceeded(get_waypt_shape_result);
+            else
+                get_waypt_shape_server.setAborted(get_waypt_shape_result);
         }
         else
             get_waypt_shape_server.setAborted(get_waypt_shape_result);
