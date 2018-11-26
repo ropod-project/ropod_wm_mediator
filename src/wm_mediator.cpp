@@ -7,12 +7,12 @@ void WMMediator::WMQueryResultCb(const actionlib::SimpleClientGoalState& state, 
 
 //NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
 
-WMMediator::WMMediator() : nh_("~"),get_waypt_position_server(nh_,"/get_position",
-  boost::bind(&WMMediator::get_waypt_position_execute, this, _1),false),wm_query_ac("/wm_query", true), wm_query_result(),
-  get_waypt_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_waypt_shape_execute, this, _1),false)
+WMMediator::WMMediator() : nh_("~"),get_topology_node_server(nh_,"/get_topology_node",
+  boost::bind(&WMMediator::get_topology_node_execute, this, _1),false),wm_query_ac("/wm_query", true), wm_query_result(),
+  get_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_shape_execute, this, _1),false)
 { 
-    get_waypt_position_server.start();
-    get_waypt_shape_server.start();
+    get_topology_node_server.start();
+    get_shape_server.start();
     wm_query_ac.waitForServer();
 }
 
@@ -20,7 +20,7 @@ WMMediator::~WMMediator()
 {
 }
 
-void WMMediator::get_waypt_position_execute(const ropod_ros_msgs::GetWayptPositionGoalConstPtr& goal)
+void WMMediator::get_topology_node_execute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal)
 {
     osm_bridge_ros_wrapper::WMQueryGoal req;
     req.id = goal->id;
@@ -29,7 +29,7 @@ void WMMediator::get_waypt_position_execute(const ropod_ros_msgs::GetWayptPositi
 
     wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
     bool finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
-    ropod_ros_msgs::GetWayptPositionResult get_waypt_position_result;
+    ropod_ros_msgs::GetTopologyNodeResult get_topology_node_result;
     if (finished_before_timeout)
     {
         int topology_id = -1;
@@ -84,26 +84,26 @@ void WMMediator::get_waypt_position_execute(const ropod_ros_msgs::GetWayptPositi
                     p.x = wm_query_result.point.x;
                     p.y = wm_query_result.point.y;
 
-                    get_waypt_position_result.position = p;
+                    get_topology_node_result.position = p;
 
-                    get_waypt_position_server.setSucceeded(get_waypt_position_result);
+                    get_topology_node_server.setSucceeded(get_topology_node_result);
                 }
                 else
-                    get_waypt_position_server.setAborted(get_waypt_position_result);
+                    get_topology_node_server.setAborted(get_topology_node_result);
             }
             else
-                get_waypt_position_server.setAborted(get_waypt_position_result);
+                get_topology_node_server.setAborted(get_topology_node_result);
         }
         else
-            get_waypt_position_server.setAborted(get_waypt_position_result);
+            get_topology_node_server.setAborted(get_topology_node_result);
     }
     else
-      get_waypt_position_server.setAborted(get_waypt_position_result);
+      get_topology_node_server.setAborted(get_topology_node_result);
 
 }
 
 
-void WMMediator::get_waypt_shape_execute(const ropod_ros_msgs::GetWayptShapeGoalConstPtr& goal)
+void WMMediator::get_shape_execute(const ropod_ros_msgs::GetShapeGoalConstPtr& goal)
 {
     osm_bridge_ros_wrapper::WMQueryGoal req;
     req.id = goal->id;
@@ -112,7 +112,7 @@ void WMMediator::get_waypt_shape_execute(const ropod_ros_msgs::GetWayptShapeGoal
 
     wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
     bool finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
-    ropod_ros_msgs::GetWayptShapeResult get_waypt_shape_result;
+    ropod_ros_msgs::GetShapeResult get_shape_result;
     if (finished_before_timeout)
     {
         int shape_id = -1;
@@ -170,20 +170,20 @@ void WMMediator::get_waypt_shape_execute(const ropod_ros_msgs::GetWayptShapeGoal
                         p.y = it_pt->y;
                         s.vertices.push_back(p);
                     }
-                    get_waypt_shape_result.shape = s;
-                    get_waypt_shape_server.setSucceeded(get_waypt_shape_result);
+                    get_shape_result.shape = s;
+                    get_shape_server.setSucceeded(get_shape_result);
                 }
                 else
-                    get_waypt_shape_server.setAborted(get_waypt_shape_result);
+                    get_shape_server.setAborted(get_shape_result);
             }
             else
-                get_waypt_shape_server.setAborted(get_waypt_shape_result);
+                get_shape_server.setAborted(get_shape_result);
         }
         else
-            get_waypt_shape_server.setAborted(get_waypt_shape_result);
+            get_shape_server.setAborted(get_shape_result);
     }
     else
-        get_waypt_shape_server.setAborted(get_waypt_shape_result);
+        get_shape_server.setAborted(get_shape_result);
 }
 
 
