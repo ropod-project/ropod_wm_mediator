@@ -243,7 +243,7 @@ void WMMediator::get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalCons
         get_path_planner_server.setAborted(get_path_planner_result);
 }
 
-ropod_ros_msgs::PathPlan WMMediator::decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> planner_areas)
+ropod_ros_msgs::PathPlan WMMediator::decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> &planner_areas)
 {
     ropod_ros_msgs::PathPlan path_plan;
     for(auto area_it = planner_areas.begin(); area_it != planner_areas.end(); area_it++)
