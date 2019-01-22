@@ -23,10 +23,11 @@ WMMediator::WMMediator() : nh_("~"),get_topology_node_server(nh_,"/get_topology_
     get_path_planner_server.start();
     wm_query_ac.waitForServer();
     path_planner_ac.waitForServer();
-    ros::param::get("/ropod_wm_mediator/building", building);
+    ros::param::get("~building", building);
     if (building.empty())
     {
         ROS_ERROR("Please set correct building name in world model mediator launch file");
+        ros::shutdown();
     }
 }
 
@@ -242,7 +243,7 @@ void WMMediator::get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalCons
         get_path_planner_server.setAborted(get_path_planner_result);
 }
 
-ropod_ros_msgs::PathPlan WMMediator::decode_path_plan(std::vector<osm_bridge_ros_wrapper::PlannerArea> planner_areas)
+ropod_ros_msgs::PathPlan WMMediator::decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> planner_areas)
 {
     ropod_ros_msgs::PathPlan path_plan;
     for(auto area_it = planner_areas.begin(); area_it != planner_areas.end(); area_it++)

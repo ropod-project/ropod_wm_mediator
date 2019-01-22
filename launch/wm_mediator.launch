@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+    <param name="building" value="AMK" />
     <node name="ropod_wm_mediator" pkg="ropod_wm_mediator" type="ropod_wm_mediator" output="screen">
-        <param name="building" value="AMK" />
     </node>
 </launch>

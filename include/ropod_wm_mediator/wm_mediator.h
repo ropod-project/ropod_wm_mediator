@@ -55,7 +55,7 @@ private:
     void get_topology_node_execute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal);
     void get_shape_execute(const ropod_ros_msgs::GetShapeGoalConstPtr& goal);
     void get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal);
-    ropod_ros_msgs::PathPlan decode_path_plan(std::vector<osm_bridge_ros_wrapper::PlannerArea> planner_areas);
+    ropod_ros_msgs::PathPlan decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> planner_areas);
 
 public:
     WMMediator();

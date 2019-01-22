@@ -18,7 +18,7 @@ class PathPlannerTest(object):
         connected = self.client.wait_for_server()
         rospy.loginfo("Successfully connected to path planner server")
         rospy.loginfo("Now running tests:")
-        rospy.loginfo("Case 1: no bloked connections & traffic rules in effect")
+        rospy.loginfo("Case 1: no blocked connections & traffic rules in effect")
         req = GetPathPlanGoal(start_floor=-1, destination_floor=4, start_area='AMK_D_L-1_C41',\
           destination_area='AMK_B_L4_C1', start_sub_area='AMK_D_L-1_C41_LA1', destination_sub_area='AMK_B_L4_C1_LA1')
         self.client.send_goal(req, done_cb=self.case1_cb)
