@@ -16,11 +16,13 @@ WMMediator::WMMediator() : nh_("~"),get_topology_node_server(nh_,"/get_topology_
   boost::bind(&WMMediator::get_topology_node_execute, this, _1),false), wm_query_ac("/wm_query", true), wm_query_result(),
   get_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_shape_execute, this, _1),false),
   get_path_planner_server(nh_,"/get_path_plan", boost::bind(&WMMediator::get_path_plan_execute, this, _1),false),
-  path_planner_ac("/path_planner", true), path_planner_result()
+  path_planner_ac("/path_planner", true), path_planner_result(),
+  get_elevator_waypoints_server(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::get_elevator_waypoints_execute, this, _1),false)
 { 
     get_topology_node_server.start();
     get_shape_server.start();
     get_path_planner_server.start();
+    get_elevator_waypoints_server.start();
     wm_query_ac.waitForServer();
     path_planner_ac.waitForServer();
     ros::param::get("~building", building);
@@ -103,18 +105,10 @@ void WMMediator::get_topology_node_execute(const ropod_ros_msgs::GetTopologyNode
 
                     get_topology_node_server.setSucceeded(get_topology_node_result);
                 }
-                else
-                    get_topology_node_server.setAborted(get_topology_node_result);
             }
-            else
-                get_topology_node_server.setAborted(get_topology_node_result);
         }
-        else
-            get_topology_node_server.setAborted(get_topology_node_result);
     }
-    else
-      get_topology_node_server.setAborted(get_topology_node_result);
-
+    get_topology_node_server.setAborted(get_topology_node_result);
 }
 
 
@@ -188,17 +182,10 @@ void WMMediator::get_shape_execute(const ropod_ros_msgs::GetShapeGoalConstPtr& g
                     get_shape_result.shape = s;
                     get_shape_server.setSucceeded(get_shape_result);
                 }
-                else
-                    get_shape_server.setAborted(get_shape_result);
             }
-            else
-                get_shape_server.setAborted(get_shape_result);
         }
-        else
-            get_shape_server.setAborted(get_shape_result);
     }
-    else
-        get_shape_server.setAborted(get_shape_result);
+    get_shape_server.setAborted(get_shape_result);
 }
 
 void WMMediator::get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal)
@@ -298,6 +285,71 @@ ropod_ros_msgs::PathPlan WMMediator::decode_path_plan(const std::vector<osm_brid
         path_plan.areas.push_back(area_temp);
     }
     return path_plan;
+}
+
+bool WMMediator::get_topology_node(int id, std::string type, ropod_ros_msgs::Position &position)
+{
+    bool finished_before_timeout; 
+
+    osm_bridge_ros_wrapper::WMQueryGoal req;
+    req.id = id;
+    req.type = type;
+
+    ROS_INFO("%d, %s", req.id, req.type);
+
+    wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
+    finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
+    if (finished_before_timeout)
+    {
+        int topology_id = -1;
+        if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        {    
+            if (wm_query_result.output == "elevator")
+            {
+                topology_id = wm_query_result.elevator.topology_id;
+            } else if (wm_query_result.output == "door")
+            {
+                topology_id = wm_query_result.door.topology_id;
+            }
+            
+            req.id = topology_id;
+            req.type = "point";
+            wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
+            finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
+
+            if (finished_before_timeout)
+            {
+                if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+                {
+                    
+                    position.x = wm_query_result.point.x;
+                    position.y = wm_query_result.point.y;
+                    ROS_INFO("%f|%f", position.x,position.y);
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
+void WMMediator::get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal)
+{
+    ropod_ros_msgs::Position elevator_position, door_position;
+    ropod_ros_msgs::GetElevatorWaypointsResult get_elevator_waypoints_result; 
+    
+    if (get_topology_node(goal->elevator_id, "elevator", elevator_position)
+        && get_topology_node(goal->door_id, "door", door_position))
+    {
+        get_elevator_waypoints_result.wp_inside.position.x = elevator_position.x;
+        get_elevator_waypoints_result.wp_inside.position.y = elevator_position.y;
+        get_elevator_waypoints_result.wp_outside.position.x = door_position.x;
+        get_elevator_waypoints_result.wp_outside.position.y = door_position.y;
+        get_elevator_waypoints_server.setSucceeded(get_elevator_waypoints_result);
+    }
+    else
+        get_elevator_waypoints_server.setAborted(get_elevator_waypoints_result);
 }
 
 

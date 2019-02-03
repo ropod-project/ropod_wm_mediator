@@ -23,6 +23,7 @@
 #include <ropod_ros_msgs/GetTopologyNodeAction.h> 
 #include <ropod_ros_msgs/GetShapeAction.h> 
 #include <ropod_ros_msgs/GetPathPlanAction.h> 
+#include <ropod_ros_msgs/GetElevatorWaypointsAction.h> 
 
 // OBL
 #include <osm_bridge_ros_wrapper/Area.h>
@@ -45,6 +46,7 @@ private:
     actionlib::SimpleActionServer<ropod_ros_msgs::GetTopologyNodeAction> get_topology_node_server;
     actionlib::SimpleActionServer<ropod_ros_msgs::GetShapeAction> get_shape_server;
     actionlib::SimpleActionServer<ropod_ros_msgs::GetPathPlanAction> get_path_planner_server;
+    actionlib::SimpleActionServer<ropod_ros_msgs::GetElevatorWaypointsAction> get_elevator_waypoints_server;
     actionlib::SimpleActionClient<osm_bridge_ros_wrapper::WMQueryAction> wm_query_ac;
     actionlib::SimpleActionClient<osm_bridge_ros_wrapper::PathPlannerAction> path_planner_ac;
     osm_bridge_ros_wrapper::WMQueryResult wm_query_result;
@@ -55,7 +57,9 @@ private:
     void get_topology_node_execute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal);
     void get_shape_execute(const ropod_ros_msgs::GetShapeGoalConstPtr& goal);
     void get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal);
+    void get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal);
     ropod_ros_msgs::PathPlan decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> &planner_areas);
+    bool get_topology_node(int id, std::string type, ropod_ros_msgs::Position &position);
 
 public:
     WMMediator();
