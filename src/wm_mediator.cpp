@@ -39,153 +39,36 @@ WMMediator::~WMMediator()
 
 void WMMediator::get_topology_node_execute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal)
 {
-    osm_bridge_ros_wrapper::WMQueryGoal req;
-    req.id = goal->id;
-    req.ref = goal->ref;
-    req.type = goal->type;
-
-    wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
-    bool finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
+    ropod_ros_msgs::Position topology_node;
     ropod_ros_msgs::GetTopologyNodeResult get_topology_node_result;
-    if (finished_before_timeout)
+
+    if (get_topology_node(goal->id, goal->type, topology_node))
     {
-        int topology_id = -1;
-        if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {
-            if (wm_query_result.output == "area")
-            {
-                osm_bridge_ros_wrapper::Area area = wm_query_result.area;
-                topology_id = area.topology_id;
-            }
-            else if (wm_query_result.output == "corridor" || wm_query_result.output == "junction")
-            {
-                osm_bridge_ros_wrapper::Corridor corridor = wm_query_result.corridor;
-                topology_id = corridor.topology_id;
-            }
-            else if (wm_query_result.output == "room")
-            {
-                osm_bridge_ros_wrapper::Room room = wm_query_result.room;
-                topology_id = room.topology_id;
-            }
-            else if (wm_query_result.output == "elevator")
-            {
-                osm_bridge_ros_wrapper::Elevator elevator = wm_query_result.elevator;
-                topology_id = elevator.topology_id;
-            }
-            else if (wm_query_result.output == "stairs")
-            {
-                osm_bridge_ros_wrapper::Stairs stairs = wm_query_result.stairs;
-                topology_id = stairs.topology_id;
-            }
-            else if (wm_query_result.output == "local_area")
-            { 
-                osm_bridge_ros_wrapper::LocalArea local_area = wm_query_result.local_area;
-                topology_id = local_area.topology_id;
-            }
-            else if (wm_query_result.output == "door")
-            { 
-                osm_bridge_ros_wrapper::Door door = wm_query_result.door;
-                topology_id = door.topology_id;
-            }
+        ropod_ros_msgs::Position p;
+        p.x = wm_query_result.point.x;
+        p.y = wm_query_result.point.y;
 
-            req.id = topology_id;
-            req.type = "point";
-            wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
-            finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
+        get_topology_node_result.position = p;
 
-            if (finished_before_timeout)
-            {
-                if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-                {
-                    ropod_ros_msgs::Position p;
-                    p.x = wm_query_result.point.x;
-                    p.y = wm_query_result.point.y;
-
-                    get_topology_node_result.position = p;
-
-                    get_topology_node_server.setSucceeded(get_topology_node_result);
-                }
-            }
-        }
+        get_topology_node_server.setSucceeded(get_topology_node_result);
     }
-    get_topology_node_server.setAborted(get_topology_node_result);
+    else
+        get_topology_node_server.setAborted(get_topology_node_result);
 }
 
 
 void WMMediator::get_shape_execute(const ropod_ros_msgs::GetShapeGoalConstPtr& goal)
 {
-    osm_bridge_ros_wrapper::WMQueryGoal req;
-    req.id = goal->id;
-    req.ref = goal->ref;
-    req.type = goal->type;
-
-    wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
-    bool finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
+    ropod_ros_msgs::Shape shape;
     ropod_ros_msgs::GetShapeResult get_shape_result;
-    if (finished_before_timeout)
+    
+    if (get_shape(goal->id, goal->type, shape))
     {
-        int shape_id = -1;
-        if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {    
-            if (wm_query_result.output == "area")
-            {
-                osm_bridge_ros_wrapper::Area area = wm_query_result.area;
-                shape_id = wm_query_result.area.shape_id;
-            }
-            else if (wm_query_result.output == "corridor" || wm_query_result.output == "junction")
-            {
-                osm_bridge_ros_wrapper::Corridor corridor = wm_query_result.corridor;
-                shape_id = wm_query_result.corridor.shape_id;
-            }
-            else if (wm_query_result.output == "room")
-            {
-                osm_bridge_ros_wrapper::Room room = wm_query_result.room;
-                shape_id = wm_query_result.room.shape_id;
-            }
-            else if (wm_query_result.output == "elevator")
-            {
-                osm_bridge_ros_wrapper::Elevator elevator = wm_query_result.elevator;
-                shape_id = wm_query_result.elevator.shape_id;
-            }
-            else if (wm_query_result.output == "stairs")
-            {
-                osm_bridge_ros_wrapper::Stairs stairs = wm_query_result.stairs;
-                shape_id = wm_query_result.stairs.shape_id;
-            }
-            else if (wm_query_result.output == "local_area")
-            { 
-                osm_bridge_ros_wrapper::LocalArea local_area = wm_query_result.local_area;
-                shape_id = wm_query_result.local_area.shape_id;
-            }
-            else if (wm_query_result.output == "door")
-            { 
-                osm_bridge_ros_wrapper::Door door = wm_query_result.door;
-                shape_id = wm_query_result.door.shape_id;
-            }
-            req.id = shape_id;
-            req.type = "shape";
-            wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
-            finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
-
-            if (finished_before_timeout)
-            {
-                if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-                {
-                    ropod_ros_msgs::Shape s;
-                    for (auto it_pt = wm_query_result.shape.points.begin(); it_pt != wm_query_result.shape.points.end(); it_pt++)
-                    {
-                        ropod_ros_msgs::Position p;
-                        p.x = it_pt->x;
-                        p.y = it_pt->y;
-                        s.vertices.push_back(p);
-                    }
-                    get_shape_result.shape = s;
-                    get_shape_server.setSucceeded(get_shape_result);
-                }
-            }
-        }
+        get_shape_result.shape = shape;
+        get_shape_server.setSucceeded(get_shape_result);
     }
-    get_shape_server.setAborted(get_shape_result);
+    else
+        get_shape_server.setAborted(get_shape_result);
 }
 
 void WMMediator::get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal)
@@ -295,8 +178,6 @@ bool WMMediator::get_topology_node(int id, std::string type, ropod_ros_msgs::Pos
     req.id = id;
     req.type = type;
 
-    ROS_INFO("%d, %s", req.id, req.type);
-
     wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
     finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
     if (finished_before_timeout)
@@ -307,11 +188,32 @@ bool WMMediator::get_topology_node(int id, std::string type, ropod_ros_msgs::Pos
             if (wm_query_result.output == "elevator")
             {
                 topology_id = wm_query_result.elevator.topology_id;
-            } else if (wm_query_result.output == "door")
+            }
+            else if (wm_query_result.output == "door")
             {
                 topology_id = wm_query_result.door.topology_id;
             }
-            
+            else if (wm_query_result.output == "area")
+            {
+                topology_id = wm_query_result.area.topology_id;
+            }
+            else if (wm_query_result.output == "corridor" || wm_query_result.output == "junction")
+            {
+                topology_id = wm_query_result.corridor.topology_id;
+            }
+            else if (wm_query_result.output == "room")
+            {
+                topology_id = wm_query_result.room.topology_id;
+            }
+            else if (wm_query_result.output == "stairs")
+            {
+                topology_id = wm_query_result.stairs.topology_id;
+            }
+            else if (wm_query_result.output == "local_area")
+            {
+                topology_id = wm_query_result.local_area.topology_id;
+            }
+          
             req.id = topology_id;
             req.type = "point";
             wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
@@ -321,10 +223,8 @@ bool WMMediator::get_topology_node(int id, std::string type, ropod_ros_msgs::Pos
             {
                 if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
                 {
-                    
                     position.x = wm_query_result.point.x;
                     position.y = wm_query_result.point.y;
-                    ROS_INFO("%f|%f", position.x,position.y);
                     return true;
                 }
             }
@@ -333,6 +233,71 @@ bool WMMediator::get_topology_node(int id, std::string type, ropod_ros_msgs::Pos
     return false;
 }
 
+
+bool WMMediator::get_shape(int id, std::string type, ropod_ros_msgs::Shape &shape)
+{
+    osm_bridge_ros_wrapper::WMQueryGoal req;
+    req.id = id;
+    req.type = type;
+
+    wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
+    bool finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
+    if (finished_before_timeout)
+    {
+        int shape_id = -1;
+        if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        {    
+            if (wm_query_result.output == "area")
+            {
+                shape_id = wm_query_result.area.shape_id;
+            }
+            else if (wm_query_result.output == "corridor" || wm_query_result.output == "junction")
+            {
+                shape_id = wm_query_result.corridor.shape_id;
+            }
+            else if (wm_query_result.output == "room")
+            {
+                shape_id = wm_query_result.room.shape_id;
+            }
+            else if (wm_query_result.output == "elevator")
+            {
+                shape_id = wm_query_result.elevator.shape_id;
+            }
+            else if (wm_query_result.output == "stairs")
+            {
+                shape_id = wm_query_result.stairs.shape_id;
+            }
+            else if (wm_query_result.output == "local_area")
+            { 
+                shape_id = wm_query_result.local_area.shape_id;
+            }
+            else if (wm_query_result.output == "door")
+            { 
+                shape_id = wm_query_result.door.shape_id;
+            }
+            req.id = shape_id;
+            req.type = "shape";
+            wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
+            finished_before_timeout = wm_query_ac.waitForResult(ros::Duration(5.0));
+
+            if (finished_before_timeout)
+            {
+                if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+                {
+                    for (auto it_pt = wm_query_result.shape.points.begin(); it_pt != wm_query_result.shape.points.end(); it_pt++)
+                    {
+                        ropod_ros_msgs::Position p;
+                        p.x = it_pt->x;
+                        p.y = it_pt->y;
+                        shape.vertices.push_back(p);
+                    }
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
 
 void WMMediator::get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal)
 {

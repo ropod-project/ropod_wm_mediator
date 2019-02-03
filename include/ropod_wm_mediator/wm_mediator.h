@@ -60,6 +60,7 @@ private:
     void get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal);
     ropod_ros_msgs::PathPlan decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> &planner_areas);
     bool get_topology_node(int id, std::string type, ropod_ros_msgs::Position &position);
+    bool get_shape(int id, std::string type, ropod_ros_msgs::Shape &shape);
 
 public:
     WMMediator();
