@@ -299,6 +299,40 @@ bool WMMediator::get_shape(int id, std::string type, ropod_ros_msgs::Shape &shap
     return false;
 }
 
+ropod_ros_msgs::Position WMMediator::compute_waiting_position(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position door, 
+  double distance_from_door)
+{
+    ropod_ros_msgs::Position waiting_position;
+
+    double ang = atan2(elevator.y - door.y, elevator.x - door.x); 
+    ang = pi_to_pi(ang + M_PI);
+
+    waiting_position.x = door.x + (distance_from_door * cos(ang));
+    waiting_position.y = door.y + (distance_from_door * sin(ang));
+
+    return waiting_position;
+}
+
+double WMMediator::pi_to_pi(double angle)
+{
+    angle = fmod(angle, 2 * M_PI);
+    if (angle >= M_PI)
+        angle -= 2 * M_PI;
+    return angle;
+}
+ 
+geometry_msgs::Quaternion WMMediator::compute_orientation(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position waiting_position)
+{
+    double ang = atan2(elevator.y - waiting_position.y, elevator.x - waiting_position.x);
+    tf::Quaternion q = tf::createQuaternionFromRPY(0.0, 0.0, ang);
+    geometry_msgs::Quaternion orientation;
+    orientation.x = q.x();
+    orientation.y = q.y();
+    orientation.z = q.z();
+    orientation.w = q.w();
+    return orientation;
+}
+
 void WMMediator::get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal)
 {
     ropod_ros_msgs::Position elevator_position, door_position;
@@ -307,10 +341,17 @@ void WMMediator::get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevato
     if (get_topology_node(goal->elevator_id, "elevator", elevator_position)
         && get_topology_node(goal->door_id, "door", door_position))
     {
+        ropod_ros_msgs::Position waiting_position = compute_waiting_position(elevator_position, door_position, 1.0);
+        geometry_msgs::Quaternion orientation = compute_orientation(elevator_position, waiting_position); 
+
         get_elevator_waypoints_result.wp_inside.position.x = elevator_position.x;
         get_elevator_waypoints_result.wp_inside.position.y = elevator_position.y;
-        get_elevator_waypoints_result.wp_outside.position.x = door_position.x;
-        get_elevator_waypoints_result.wp_outside.position.y = door_position.y;
+        get_elevator_waypoints_result.wp_inside.orientation = orientation;
+
+        get_elevator_waypoints_result.wp_outside.position.x = waiting_position.x;
+        get_elevator_waypoints_result.wp_outside.position.y = waiting_position.y;
+        get_elevator_waypoints_result.wp_outside.orientation = orientation;
+
         get_elevator_waypoints_server.setSucceeded(get_elevator_waypoints_result);
     }
     else

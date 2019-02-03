@@ -18,11 +18,13 @@ class ElevatorWaypointsTest(object):
         connected = self.client.wait_for_server()
         rospy.loginfo("Successfully connected to elevator waypoints server")
         
-        req = GetElevatorWaypointsGoal(elevator_id = 121, door_id = 196)
+        req = GetElevatorWaypointsGoal(elevator_id = 121, door_id = 196)          # BRSU
+        # req = GetElevatorWaypointsGoal(elevator_id = 5, door_id = 161)            # AMK
+        
         self.client.send_goal(req, done_cb=self.cb)
         self.client.wait_for_result()
 
-        rospy.signal_shutdown("Path planner server tests complete")
+        rospy.signal_shutdown("Elevator waypoints server test complete")
 
     def cb(self, status, result):
         try:

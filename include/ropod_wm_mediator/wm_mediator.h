@@ -10,6 +10,7 @@
 
 // ROS
 #include <ros/ros.h>
+#include <tf/tf.h>
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 
@@ -61,6 +62,9 @@ private:
     ropod_ros_msgs::PathPlan decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> &planner_areas);
     bool get_topology_node(int id, std::string type, ropod_ros_msgs::Position &position);
     bool get_shape(int id, std::string type, ropod_ros_msgs::Shape &shape);
+    ropod_ros_msgs::Position compute_waiting_position(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position door, double distance_from_door);
+    double pi_to_pi(double angle);
+    geometry_msgs::Quaternion compute_orientation(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position waiting_position);
 
 public:
     WMMediator();
