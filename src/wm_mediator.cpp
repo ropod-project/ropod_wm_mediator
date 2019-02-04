@@ -23,14 +23,17 @@ WMMediator::WMMediator() : nh_("~"),get_topology_node_server(nh_,"/get_topology_
     get_shape_server.start();
     get_path_planner_server.start();
     get_elevator_waypoints_server.start();
-    wm_query_ac.waitForServer();
-    path_planner_ac.waitForServer();
+
     ros::param::get("~building", building);
     if (building.empty())
     {
         ROS_ERROR("Please set correct building name in world model mediator launch file");
         ros::shutdown();
     }
+
+    ROS_INFO_STREAM("wm_mediator waiting for wm_query and path_planner action servers to come up...");
+    wm_query_ac.waitForServer();
+    path_planner_ac.waitForServer();
 }
 
 WMMediator::~WMMediator()
