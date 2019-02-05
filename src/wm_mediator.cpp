@@ -308,7 +308,7 @@ ropod_ros_msgs::Position WMMediator::compute_waiting_position(ropod_ros_msgs::Po
     ropod_ros_msgs::Position waiting_position;
 
     double ang = atan2(elevator.y - door.y, elevator.x - door.x); 
-    ang = pi_to_pi(ang + M_PI);
+    ang = wrap_to_pi(ang + M_PI);
 
     waiting_position.x = door.x + (distance_from_door * cos(ang));
     waiting_position.y = door.y + (distance_from_door * sin(ang));
@@ -316,7 +316,7 @@ ropod_ros_msgs::Position WMMediator::compute_waiting_position(ropod_ros_msgs::Po
     return waiting_position;
 }
 
-double WMMediator::pi_to_pi(double angle)
+double WMMediator::wrap_to_pi(double angle)
 {
     angle = fmod(angle, 2 * M_PI);
     if (angle >= M_PI)
@@ -347,6 +347,7 @@ void WMMediator::get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevato
         ropod_ros_msgs::Position waiting_position = compute_waiting_position(elevator_position, door_position, 1.0);
         geometry_msgs::Quaternion orientation = compute_orientation(elevator_position, waiting_position); 
 
+        // As per the current OSM mapping conventions this waypoint will be approximately at the center of the elevator
         get_elevator_waypoints_result.wp_inside.position.x = elevator_position.x;
         get_elevator_waypoints_result.wp_inside.position.y = elevator_position.y;
         get_elevator_waypoints_result.wp_inside.orientation = orientation;
@@ -360,7 +361,6 @@ void WMMediator::get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevato
     else
         get_elevator_waypoints_server.setAborted(get_elevator_waypoints_result);
 }
-
 
 int main(int argc, char **argv)
 {
