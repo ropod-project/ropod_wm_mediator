@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="building" default="$(optenv BUILDING AMK)"/>
     <node name="ropod_wm_mediator" pkg="ropod_wm_mediator" type="ropod_wm_mediator" output="screen">
-        <param name="building" value="AMK" />
+        <param name="building" value="$(arg building)" />
     </node>
 </launch>
