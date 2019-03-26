@@ -161,14 +161,18 @@ ropod_ros_msgs::PathPlan WMMediator::decode_path_plan(const std::vector<osm_brid
             area_temp.sub_areas.push_back(sub_area_temp);
         }
 
+        path_plan.areas.push_back(area_temp);
+
         if(area_it->exit_door.id > 0)
         {
-            ropod_ros_msgs::SubArea sub_area_temp;
-            sub_area_temp.id = std::to_string(area_it->exit_door.id);
-            area_temp.sub_areas.push_back(sub_area_temp);
-            sub_area_temp.floor_number = area_temp.floor_number;
+            ropod_ros_msgs::Area area_door;
+            area_door.id = std::to_string(area_it->exit_door.id);
+            area_door.floor_number = area_temp.floor_number;
+            area_door.name = area_it->area.ref;
+            area_door.type = "door";
+            path_plan.areas.push_back(area_door);
         }
-        path_plan.areas.push_back(area_temp);
+        
     }
     return path_plan;
 }
