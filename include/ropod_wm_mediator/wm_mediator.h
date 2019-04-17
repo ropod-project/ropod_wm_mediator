@@ -38,8 +38,11 @@
 #include <osm_bridge_ros_wrapper/WMQueryAction.h>
 #include <osm_bridge_ros_wrapper/PathPlannerAction.h>
 
+#include <ftsm_base.h>
 
-class WMMediator
+using namespace ftsm;
+
+class WMMediator : public FTSMBase
 {
 private:
     ros::NodeHandle nh_;
@@ -68,6 +71,14 @@ private:
 
 public:
     WMMediator();
+
+    /* FTSM base functions */
+    std::string init();
+    std::string configuring();
+    std::string ready();
+    std::string running();
+    std::string recovering();
+
     virtual ~WMMediator();
 };
 

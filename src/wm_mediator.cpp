@@ -12,12 +12,17 @@ void WMMediator::PathPlannerResultCb(const actionlib::SimpleClientGoalState& sta
 
 //NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
 
-WMMediator::WMMediator() : nh_("~"),get_topology_node_server(nh_,"/get_topology_node",
-  boost::bind(&WMMediator::get_topology_node_execute, this, _1),false), wm_query_ac("/wm_query", true), wm_query_result(),
-  get_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_shape_execute, this, _1),false),
-  get_path_planner_server(nh_,"/get_path_plan", boost::bind(&WMMediator::get_path_plan_execute, this, _1),false),
-  path_planner_ac("/path_planner", true), path_planner_result(),
-  get_elevator_waypoints_server(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::get_elevator_waypoints_execute, this, _1),false)
+WMMediator::WMMediator() : 
+    FTSMBase("wm_mediator", {"roscore", "osm_bridge_ros_wrapper"}),
+    nh_("~"),
+    get_topology_node_server(nh_,"/get_topology_node", boost::bind(&WMMediator::get_topology_node_execute, this, _1),false),
+    wm_query_ac("/wm_query", true), 
+    wm_query_result(),
+    get_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_shape_execute, this, _1),false),
+    get_path_planner_server(nh_,"/get_path_plan", boost::bind(&WMMediator::get_path_plan_execute, this, _1),false),
+    path_planner_ac("/path_planner", true), 
+    path_planner_result(),
+    get_elevator_waypoints_server(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::get_elevator_waypoints_execute, this, _1),false)
 { 
     get_topology_node_server.start();
     get_shape_server.start();
@@ -31,13 +36,39 @@ WMMediator::WMMediator() : nh_("~"),get_topology_node_server(nh_,"/get_topology_
         ros::shutdown();
     }
 
-    ROS_INFO_STREAM("wm_mediator waiting for wm_query and path_planner action servers to come up...");
+    ROS_INFO_STREAM("wm_mediator waiting for wm_query action server to come up...");
     wm_query_ac.waitForServer();
+    ROS_INFO_STREAM("wm_mediator waiting for path_planner action server to come up...");
     path_planner_ac.waitForServer();
 }
 
 WMMediator::~WMMediator()
 {
+}
+
+std::string WMMediator::init()
+{
+    return FTSMTransitions::CONTINUE;
+}
+
+std::string WMMediator::configuring()
+{
+    return FTSMTransitions::CONTINUE;
+}
+
+std::string WMMediator::ready()
+{
+    return FTSMTransitions::CONTINUE;
+}
+
+std::string WMMediator::running()
+{
+    return FTSMTransitions::CONTINUE;
+}
+
+std::string WMMediator::recovering()
+{
+    return FTSMTransitions::CONTINUE;
 }
 
 void WMMediator::get_topology_node_execute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal)
