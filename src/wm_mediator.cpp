@@ -24,22 +24,6 @@ WMMediator::WMMediator() :
     path_planner_result(),
     get_elevator_waypoints_server(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::get_elevator_waypoints_execute, this, _1),false)
 { 
-    get_topology_node_server.start();
-    get_shape_server.start();
-    get_path_planner_server.start();
-    get_elevator_waypoints_server.start();
-
-    ros::param::get("~building", building);
-    if (building.empty())
-    {
-        ROS_ERROR("Please set correct building name in world model mediator launch file");
-        ros::shutdown();
-    }
-
-    ROS_INFO_STREAM("wm_mediator waiting for wm_query action server to come up...");
-    wm_query_ac.waitForServer();
-    ROS_INFO_STREAM("wm_mediator waiting for path_planner action server to come up...");
-    path_planner_ac.waitForServer();
 }
 
 WMMediator::~WMMediator()
@@ -48,17 +32,36 @@ WMMediator::~WMMediator()
 
 std::string WMMediator::init()
 {
-    return FTSMTransitions::CONTINUE;
+    ROS_INFO_STREAM("Initialising action servers");
+
+    get_topology_node_server.start();
+    get_shape_server.start();
+    get_path_planner_server.start();
+    get_elevator_waypoints_server.start();
+
+    ros::param::get("~building", this->building);
+    std::cout << this->building << std::endl;
+    if (this->building.empty())
+    {
+        ROS_ERROR("Please set correct building name in world model mediator launch file");
+        return FTSMTransitions::INIT_FAILED;
+    }
+
+    ROS_INFO_STREAM("wm_mediator waiting for wm_query action server to come up...");
+    wm_query_ac.waitForServer();
+    ROS_INFO_STREAM("wm_mediator waiting for path_planner action server to come up...");
+    path_planner_ac.waitForServer();
+    return FTSMTransitions::INITIALISED;
 }
 
 std::string WMMediator::configuring()
 {
-    return FTSMTransitions::CONTINUE;
+    return FTSMTransitions::DONE_CONFIGURING;
 }
 
 std::string WMMediator::ready()
 {
-    return FTSMTransitions::CONTINUE;
+    return FTSMTransitions::RUN;
 }
 
 std::string WMMediator::running()
@@ -68,7 +71,15 @@ std::string WMMediator::running()
 
 std::string WMMediator::recovering()
 {
-    return FTSMTransitions::CONTINUE;
+    if (!ros::ok())
+    {
+        return FTSMTransitions::FAILED_RECOVERY;
+    }
+    if (this->building.empty()){
+        ros::shutdown();
+        return FTSMTransitions::FAILED_RECOVERY;
+    }
+    return FTSMTransitions::DONE_RECOVERING;
 }
 
 void WMMediator::get_topology_node_execute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal)
@@ -398,10 +409,16 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "WM_mediator");
     ros::NodeHandle node;
     WMMediator wm_mediator;
-
     ROS_INFO("World Model mediator ready!");
 
-    ros::spin();
+    ros::Rate loop_rate(10);
+    wm_mediator.run();
+    while(ros::ok())
+    {
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
+
     return 0;
 }
 

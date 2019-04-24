@@ -18,8 +18,8 @@ class ElevatorWaypointsTest(object):
         connected = self.client.wait_for_server()
         rospy.loginfo("Successfully connected to elevator waypoints server")
         
-        req = GetElevatorWaypointsGoal(elevator_id = 121, door_id = 196)          # BRSU
-        # req = GetElevatorWaypointsGoal(elevator_id = 5, door_id = 161)            # AMK
+        # req = GetElevatorWaypointsGoal(elevator_id = 121, door_id = 196)          # BRSU
+        req = GetElevatorWaypointsGoal(elevator_id = 5, door_id = 161)            # AMK
         
         self.client.send_goal(req, done_cb=self.cb)
         self.client.wait_for_result()
