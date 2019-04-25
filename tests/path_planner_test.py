@@ -26,12 +26,12 @@ class PathPlannerTest(object):
 
         rospy.loginfo("Case 2: connection blocked but traffic rules still in effect")
         blocked_connection1 = BlockedConnection()
-        blocked_connection1.start_id = 4825
-        blocked_connection1.end_id = 4824
+        blocked_connection1.start_id = 100
+        blocked_connection1.end_id = 102
 
         blocked_connection2 = BlockedConnection()
-        blocked_connection2.start_id = 4824
-        blocked_connection2.end_id = 5055
+        blocked_connection2.start_id = 102
+        blocked_connection2.end_id = 168
 
         req = GetPathPlanGoal(start_floor=-1, destination_floor=4, start_area='AMK_D_L-1_C41',\
           destination_area='AMK_B_L4_C1', start_sub_area='AMK_D_L-1_C41_LA1', destination_sub_area='AMK_B_L4_C1_LA1',\
@@ -41,12 +41,12 @@ class PathPlannerTest(object):
 
         rospy.loginfo("Case 3: connection blocked but traffic rules are relaxed")
         blocked_connection1 = BlockedConnection()
-        blocked_connection1.start_id = 4825
-        blocked_connection1.end_id = 4824
+        blocked_connection1.start_id = 100
+        blocked_connection1.end_id = 102
 
         blocked_connection2 = BlockedConnection()
-        blocked_connection2.start_id = 4824
-        blocked_connection2.end_id = 5055
+        blocked_connection2.start_id = 102
+        blocked_connection2.end_id = 168
 
         req = GetPathPlanGoal(start_floor=-1, destination_floor=4, start_area='AMK_D_L-1_C41',\
           destination_area='AMK_B_L4_C1', start_sub_area='AMK_D_L-1_C41_LA1', destination_sub_area='AMK_B_L4_C1_LA1',\
@@ -58,8 +58,8 @@ class PathPlannerTest(object):
 
     def case1_cb(self, status, result):
         try:
-            #print(result.path_plan)
             assert(result.path_plan)
+            assert(status == 3)# succeded
             rospy.loginfo("Case 1 test successfully passed")
         except Exception as e:
             rospy.logerr("Case 1 test failed")
@@ -68,7 +68,7 @@ class PathPlannerTest(object):
         try:
             # This should fail as path cannot be planned with bloked connection withou
             # relaxing traffic rules 
-            #print(result.path_plan)
+            assert(status == 3)# succeded
             assert(result.path_plan == [])
             rospy.logerr("Case 2 test failed")
         except Exception as e:
@@ -76,7 +76,7 @@ class PathPlannerTest(object):
 
     def case3_cb(self, status, result):
         try:
-            #print(result.path_plan)
+            assert(status == 3)# succeded
             assert(result.path_plan)
             rospy.loginfo("Case 3 test successfully passed")
         except Exception as e:

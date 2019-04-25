@@ -27,8 +27,10 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+    include
+    /opt/ropod/ftsm/cppftsm/include
+    /opt/ropod/ropod_common/ropodcpp/ftsm/include
+    ${catkin_INCLUDE_DIRS}
 )
 
 catkin_package(CATKIN_DEPENDS
@@ -43,6 +45,10 @@ catkin_package(CATKIN_DEPENDS
 # Mediator
 ########################################################################
 
-add_executable(ropod_wm_mediator ${PROJECT_SOURCE_DIR}/src/wm_mediator.cpp)
+add_executable(ropod_wm_mediator 
+    ${PROJECT_SOURCE_DIR}/src/wm_mediator.cpp
+    /opt/ropod/ropod_common/ropodcpp/ftsm/src/ftsm_base.cpp
+    /opt/ropod/ftsm/cppftsm/src/ftsm.cpp
+)
 add_dependencies(ropod_wm_mediator ropod_ros_msgs_generate_messages_cpp ${ropod_wm_mediator_EXPORTED_TARGETS})
 target_link_libraries(ropod_wm_mediator ${LIBS}  ${catkin_LIBRARIES} yaml-cpp)

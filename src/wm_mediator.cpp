@@ -12,32 +12,64 @@ void WMMediator::PathPlannerResultCb(const actionlib::SimpleClientGoalState& sta
 
 //NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
 
-WMMediator::WMMediator() : nh_("~"),get_topology_node_server(nh_,"/get_topology_node",
-  boost::bind(&WMMediator::get_topology_node_execute, this, _1),false), wm_query_ac("/wm_query", true), wm_query_result(),
-  get_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_shape_execute, this, _1),false),
-  get_path_planner_server(nh_,"/get_path_plan", boost::bind(&WMMediator::get_path_plan_execute, this, _1),false),
-  path_planner_ac("/path_planner", true), path_planner_result(),
-  get_elevator_waypoints_server(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::get_elevator_waypoints_execute, this, _1),false)
+WMMediator::WMMediator() : 
+    FTSMBase("wm_mediator", {"roscore", "osm_bridge_ros_wrapper"}),
+    nh_("~"),
+    get_topology_node_server(nh_,"/get_topology_node", boost::bind(&WMMediator::get_topology_node_execute, this, _1),false),
+    wm_query_ac("/wm_query", true), 
+    wm_query_result(),
+    get_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_shape_execute, this, _1),false),
+    get_path_planner_server(nh_,"/get_path_plan", boost::bind(&WMMediator::get_path_plan_execute, this, _1),false),
+    path_planner_ac("/path_planner", true), 
+    path_planner_result(),
+    get_elevator_waypoints_server(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::get_elevator_waypoints_execute, this, _1),false)
 { 
+}
+
+WMMediator::~WMMediator()
+{
+}
+
+std::string WMMediator::init()
+{
+    ROS_INFO_STREAM("Initialising action servers");
+
     get_topology_node_server.start();
     get_shape_server.start();
     get_path_planner_server.start();
     get_elevator_waypoints_server.start();
 
-    ros::param::get("~building", building);
-    if (building.empty())
+    ros::param::get("~building", this->building);
+    if (this->building.empty())
     {
         ROS_ERROR("Please set correct building name in world model mediator launch file");
-        ros::shutdown();
+        return FTSMTransitions::INIT_FAILED;
     }
+    ROS_DEBUG_STREAM("Using building: " << this->building);
 
-    ROS_INFO_STREAM("wm_mediator waiting for wm_query and path_planner action servers to come up...");
+    ROS_INFO_STREAM("wm_mediator waiting for wm_query action server to come up...");
     wm_query_ac.waitForServer();
+    ROS_INFO_STREAM("wm_mediator waiting for path_planner action server to come up...");
     path_planner_ac.waitForServer();
+    return FTSMTransitions::INITIALISED;
 }
 
-WMMediator::~WMMediator()
+std::string WMMediator::running()
 {
+    return FTSMTransitions::CONTINUE;
+}
+
+std::string WMMediator::recovering()
+{
+    if (!ros::ok())
+    {
+        return FTSMTransitions::FAILED_RECOVERY;
+    }
+    if (this->building.empty()){
+        ros::shutdown();
+        return FTSMTransitions::FAILED_RECOVERY;
+    }
+    return FTSMTransitions::DONE_RECOVERING;
 }
 
 void WMMediator::get_topology_node_execute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal)
@@ -371,10 +403,16 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "WM_mediator");
     ros::NodeHandle node;
     WMMediator wm_mediator;
-
     ROS_INFO("World Model mediator ready!");
 
-    ros::spin();
+    ros::Rate loop_rate(10);
+    wm_mediator.run();
+    while(ros::ok())
+    {
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
+
     return 0;
 }
 
