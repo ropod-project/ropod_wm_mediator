@@ -74,8 +74,6 @@ public:
 
     /* FTSM base functions */
     std::string init();
-    std::string configuring();
-    std::string ready();
     std::string running();
     std::string recovering();
 

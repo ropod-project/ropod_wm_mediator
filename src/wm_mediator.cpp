@@ -40,28 +40,18 @@ std::string WMMediator::init()
     get_elevator_waypoints_server.start();
 
     ros::param::get("~building", this->building);
-    std::cout << this->building << std::endl;
     if (this->building.empty())
     {
         ROS_ERROR("Please set correct building name in world model mediator launch file");
         return FTSMTransitions::INIT_FAILED;
     }
+    ROS_DEBUG_STREAM("Using building: " << this->building);
 
     ROS_INFO_STREAM("wm_mediator waiting for wm_query action server to come up...");
     wm_query_ac.waitForServer();
     ROS_INFO_STREAM("wm_mediator waiting for path_planner action server to come up...");
     path_planner_ac.waitForServer();
     return FTSMTransitions::INITIALISED;
-}
-
-std::string WMMediator::configuring()
-{
-    return FTSMTransitions::DONE_CONFIGURING;
-}
-
-std::string WMMediator::ready()
-{
-    return FTSMTransitions::RUN;
 }
 
 std::string WMMediator::running()
