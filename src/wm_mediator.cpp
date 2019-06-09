@@ -12,18 +12,21 @@ void WMMediator::PathPlannerResultCb(const actionlib::SimpleClientGoalState& sta
 
 //NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
 
-WMMediator::WMMediator() : 
-    FTSMBase("wm_mediator", {"roscore", "osm_bridge_ros_wrapper"}),
+WMMediator::WMMediator() :
+    FTSMBase("wm_mediator", {"roscore", "route_planner", "osm_bridge_ros_wrapper"},
+             {{"functional", {{"roscore", "ros/ros_master_monitor"},
+                              {"route_planner", "ros/ros_node_monitor"},
+                              {"osm_bridge_ros_wrapper", "ros/ros_node_monitor"}}}}),
     nh_("~"),
     get_topology_node_server(nh_,"/get_topology_node", boost::bind(&WMMediator::get_topology_node_execute, this, _1),false),
-    wm_query_ac("/wm_query", true), 
+    wm_query_ac("/wm_query", true),
     wm_query_result(),
     get_shape_server(nh_,"/get_shape", boost::bind(&WMMediator::get_shape_execute, this, _1),false),
     get_path_planner_server(nh_,"/get_path_plan", boost::bind(&WMMediator::get_path_plan_execute, this, _1),false),
-    path_planner_ac("/path_planner", true), 
+    path_planner_ac("/path_planner", true),
     path_planner_result(),
     get_elevator_waypoints_server(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::get_elevator_waypoints_execute, this, _1),false)
-{ 
+{
 }
 
 WMMediator::~WMMediator()
@@ -96,7 +99,7 @@ void WMMediator::get_shape_execute(const ropod_ros_msgs::GetShapeGoalConstPtr& g
 {
     ropod_ros_msgs::Shape shape;
     ropod_ros_msgs::GetShapeResult get_shape_result;
-    
+
     if (get_shape(goal->id, goal->type, shape))
     {
         get_shape_result.shape = shape;
@@ -109,8 +112,8 @@ void WMMediator::get_shape_execute(const ropod_ros_msgs::GetShapeGoalConstPtr& g
 void WMMediator::get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal)
 {
     osm_bridge_ros_wrapper::PathPlannerGoal req;
-    req.start_floor =  building + "_L" + std::to_string(goal->start_floor);        
-    req.destination_floor = building + "_L" + std::to_string(goal->destination_floor);   
+    req.start_floor =  building + "_L" + std::to_string(goal->start_floor);
+    req.destination_floor = building + "_L" + std::to_string(goal->destination_floor);
 
     req.start_area = goal->start_area;
     req.destination_area = goal->destination_area;
@@ -122,7 +125,7 @@ void WMMediator::get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalCons
     req.destination_task = goal->destination_task;
 
 
-    for (int i = 0; i < goal->blocked_connections.size(); i++) 
+    for (int i = 0; i < goal->blocked_connections.size(); i++)
     {
         osm_bridge_ros_wrapper::BlockedConnection temp;
         temp.start_id = goal->blocked_connections[i].start_id;
@@ -135,9 +138,9 @@ void WMMediator::get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalCons
     bool finished_before_timeout = path_planner_ac.waitForResult(ros::Duration(60.0));
     ropod_ros_msgs::GetPathPlanResult get_path_planner_result;
     if (finished_before_timeout)
-    {   
+    {
         if (path_planner_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {    
+        {
             get_path_planner_result.path_plan =  decode_path_plan(path_planner_result.planner_areas);
             get_path_planner_server.setSucceeded(get_path_planner_result);
         }
@@ -204,14 +207,14 @@ ropod_ros_msgs::PathPlan WMMediator::decode_path_plan(const std::vector<osm_brid
             area_door.type = "door";
             path_plan.areas.push_back(area_door);
         }
-        
+
     }
     return path_plan;
 }
 
 bool WMMediator::get_topology_node(int id, std::string type, ropod_ros_msgs::Position &position)
 {
-    bool finished_before_timeout; 
+    bool finished_before_timeout;
 
     osm_bridge_ros_wrapper::WMQueryGoal req;
     req.id = id;
@@ -223,7 +226,7 @@ bool WMMediator::get_topology_node(int id, std::string type, ropod_ros_msgs::Pos
     {
         int topology_id = -1;
         if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {    
+        {
             if (wm_query_result.output == "elevator")
             {
                 topology_id = wm_query_result.elevator.topology_id;
@@ -252,7 +255,7 @@ bool WMMediator::get_topology_node(int id, std::string type, ropod_ros_msgs::Pos
             {
                 topology_id = wm_query_result.local_area.topology_id;
             }
-          
+
             req.id = topology_id;
             req.type = "point";
             wm_query_ac.sendGoal(req, boost::bind(&WMMediator::WMQueryResultCb, this, _1, _2));
@@ -285,7 +288,7 @@ bool WMMediator::get_shape(int id, std::string type, ropod_ros_msgs::Shape &shap
     {
         int shape_id = -1;
         if (wm_query_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {    
+        {
             if (wm_query_result.output == "area")
             {
                 shape_id = wm_query_result.area.shape_id;
@@ -307,11 +310,11 @@ bool WMMediator::get_shape(int id, std::string type, ropod_ros_msgs::Shape &shap
                 shape_id = wm_query_result.stairs.shape_id;
             }
             else if (wm_query_result.output == "local_area")
-            { 
+            {
                 shape_id = wm_query_result.local_area.shape_id;
             }
             else if (wm_query_result.output == "door")
-            { 
+            {
                 shape_id = wm_query_result.door.shape_id;
             }
             req.id = shape_id;
@@ -338,12 +341,12 @@ bool WMMediator::get_shape(int id, std::string type, ropod_ros_msgs::Shape &shap
     return false;
 }
 
-ropod_ros_msgs::Position WMMediator::compute_waiting_position(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position door, 
+ropod_ros_msgs::Position WMMediator::compute_waiting_position(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position door,
   double distance_from_door)
 {
     ropod_ros_msgs::Position waiting_position;
 
-    double ang = atan2(elevator.y - door.y, elevator.x - door.x); 
+    double ang = atan2(elevator.y - door.y, elevator.x - door.x);
     ang = wrap_to_pi(ang + M_PI);
 
     waiting_position.x = door.x + (distance_from_door * cos(ang));
@@ -359,7 +362,7 @@ double WMMediator::wrap_to_pi(double angle)
         angle -= 2 * M_PI;
     return angle;
 }
- 
+
 geometry_msgs::Quaternion WMMediator::compute_orientation(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position waiting_position)
 {
     double ang = atan2(elevator.y - waiting_position.y, elevator.x - waiting_position.x);
@@ -375,13 +378,13 @@ geometry_msgs::Quaternion WMMediator::compute_orientation(ropod_ros_msgs::Positi
 void WMMediator::get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal)
 {
     ropod_ros_msgs::Position elevator_position, door_position;
-    ropod_ros_msgs::GetElevatorWaypointsResult get_elevator_waypoints_result; 
-    
+    ropod_ros_msgs::GetElevatorWaypointsResult get_elevator_waypoints_result;
+
     if (get_topology_node(goal->elevator_id, "elevator", elevator_position)
         && get_topology_node(goal->door_id, "door", door_position))
     {
         ropod_ros_msgs::Position waiting_position = compute_waiting_position(elevator_position, door_position, 1.0);
-        geometry_msgs::Quaternion orientation = compute_orientation(elevator_position, waiting_position); 
+        geometry_msgs::Quaternion orientation = compute_orientation(elevator_position, waiting_position);
 
         // As per the current OSM mapping conventions this waypoint will be approximately at the center of the elevator
         get_elevator_waypoints_result.wp_inside.position.x = elevator_position.x;
@@ -415,6 +418,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-
-
