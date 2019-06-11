@@ -25,6 +25,7 @@
 #include <ropod_ros_msgs/GetShapeAction.h> 
 #include <ropod_ros_msgs/GetPathPlanAction.h> 
 #include <ropod_ros_msgs/GetElevatorWaypointsAction.h> 
+#include <ropod_ros_msgs/GetNearestWLANAction.h> 
 
 // OBL
 #include <osm_bridge_ros_wrapper/Area.h>
@@ -37,6 +38,7 @@
 
 #include <osm_bridge_ros_wrapper/WMQueryAction.h>
 #include <osm_bridge_ros_wrapper/PathPlannerAction.h>
+#include <osm_bridge_ros_wrapper/NearestWLANAction.h>
 
 #include <ftsm_base.h>
 
@@ -51,17 +53,22 @@ private:
     actionlib::SimpleActionServer<ropod_ros_msgs::GetShapeAction> get_shape_server;
     actionlib::SimpleActionServer<ropod_ros_msgs::GetPathPlanAction> get_path_planner_server;
     actionlib::SimpleActionServer<ropod_ros_msgs::GetElevatorWaypointsAction> get_elevator_waypoints_server;
+    actionlib::SimpleActionServer<ropod_ros_msgs::GetNearestWLANAction> get_nearest_wlan_server;
     actionlib::SimpleActionClient<osm_bridge_ros_wrapper::WMQueryAction> wm_query_ac;
     actionlib::SimpleActionClient<osm_bridge_ros_wrapper::PathPlannerAction> path_planner_ac;
+    actionlib::SimpleActionClient<osm_bridge_ros_wrapper::NearestWLANAction> nearest_wlan_ac;
     osm_bridge_ros_wrapper::WMQueryResult wm_query_result;
     osm_bridge_ros_wrapper::PathPlannerResult path_planner_result;
+    osm_bridge_ros_wrapper::NearestWLANResult nearest_wlan_result;
     
     void WMQueryResultCb(const actionlib::SimpleClientGoalState& state,const osm_bridge_ros_wrapper::WMQueryResultConstPtr& result);
     void PathPlannerResultCb(const actionlib::SimpleClientGoalState& state,const osm_bridge_ros_wrapper::PathPlannerResultConstPtr& result);
+    void NearestWLANResultCb(const actionlib::SimpleClientGoalState& state,const osm_bridge_ros_wrapper::NearestWLANResultConstPtr& result);
     void get_topology_node_execute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal);
     void get_shape_execute(const ropod_ros_msgs::GetShapeGoalConstPtr& goal);
     void get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal);
     void get_elevator_waypoints_execute(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal);
+    void get_nearest_wlan_execute(const ropod_ros_msgs::GetNearestWLANGoalConstPtr& goal);
     ropod_ros_msgs::PathPlan decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> &planner_areas);
     bool get_topology_node(int id, std::string type, ropod_ros_msgs::Position &position);
     bool get_shape(int id, std::string type, ropod_ros_msgs::Shape &shape);

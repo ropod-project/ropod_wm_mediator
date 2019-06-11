@@ -10,10 +10,10 @@ void WMMediator::PathPlannerResultCb(const actionlib::SimpleClientGoalState& sta
     path_planner_result = *result;
 }
 
-/* void WMMediator::NearestWLANResultCb(const actionlib::SimpleClientGoalState& state, const osm_bridge_ros_wrapper::NearestWLANResultConstPtr& result) */
-/* { */
-/*     nearest_wlan_result = *result; */
-/* } */
+void WMMediator::NearestWLANResultCb(const actionlib::SimpleClientGoalState& state, const osm_bridge_ros_wrapper::NearestWLANResultConstPtr& result)
+{
+    nearest_wlan_result = *result;
+}
 
 //NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
 
@@ -29,6 +29,9 @@ WMMediator::WMMediator() :
     get_path_planner_server(nh_,"/get_path_plan", boost::bind(&WMMediator::get_path_plan_execute, this, _1),false),
     path_planner_ac("/path_planner", true),
     path_planner_result(),
+    nearest_wlan_ac("/nearest_wlan", true),
+    nearest_wlan_result(),
+    get_nearest_wlan_server(nh_,"/get_nearest_wlan", boost::bind(&WMMediator::get_nearest_wlan_execute, this, _1),false),
     get_elevator_waypoints_server(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::get_elevator_waypoints_execute, this, _1),false)
 {
 }
@@ -45,6 +48,7 @@ std::string WMMediator::init()
     get_shape_server.start();
     get_path_planner_server.start();
     get_elevator_waypoints_server.start();
+    get_nearest_wlan_server.start();
 
     ros::param::get("~building", this->building);
     if (this->building.empty())
@@ -58,6 +62,8 @@ std::string WMMediator::init()
     wm_query_ac.waitForServer();
     ROS_INFO_STREAM("wm_mediator waiting for path_planner action server to come up...");
     path_planner_ac.waitForServer();
+    ROS_INFO_STREAM("wm_mediator waiting for nearest_wlan action server to come up...");
+    nearest_wlan_ac.waitForServer();
     return FTSMTransitions::INITIALISED;
 }
 
@@ -153,6 +159,42 @@ void WMMediator::get_path_plan_execute(const ropod_ros_msgs::GetPathPlanGoalCons
     }
     else
         get_path_planner_server.setAborted(get_path_planner_result);
+}
+
+void WMMediator::get_nearest_wlan_execute(const ropod_ros_msgs::GetNearestWLANGoalConstPtr& goal)
+{
+    /* create request for osm_bridge_ros_wrapper's action server */
+    osm_bridge_ros_wrapper::NearestWLANGoal req;
+    req.is_x_y_provided = goal->is_pos_provided;
+    if (goal->is_pos_provided)
+    {
+        req.x = goal->position.x;
+        req.y = goal->position.y;
+    }
+    req.floor = goal->floor;
+    req.area = goal->area;
+    req.local_area = goal->local_area;
+
+    /* send request and wait for response */
+    nearest_wlan_ac.sendGoal(req, boost::bind(&WMMediator::NearestWLANResultCb, this, _1, _2));
+    bool finished_before_timeout = nearest_wlan_ac.waitForResult(ros::Duration(60.0));
+    ropod_ros_msgs::GetNearestWLANResult get_nearest_wlan_result;
+
+    /* convert osm_bridge_ros_wrapper's response to wm_mediator's response */
+    if (finished_before_timeout)
+    {
+        if (nearest_wlan_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        {
+            get_nearest_wlan_result.wlan_pose.x = nearest_wlan_result.point.x;
+            get_nearest_wlan_result.wlan_pose.y = nearest_wlan_result.point.y;
+            /* translate point to pose */
+            get_nearest_wlan_server.setSucceeded(get_nearest_wlan_result);
+        }
+        else
+            get_nearest_wlan_server.setSucceeded(get_nearest_wlan_result);
+    }
+    else
+        get_nearest_wlan_server.setAborted(get_nearest_wlan_result);
 }
 
 ropod_ros_msgs::PathPlan WMMediator::decode_path_plan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> &planner_areas)
