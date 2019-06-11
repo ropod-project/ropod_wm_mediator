@@ -10,12 +10,16 @@ void WMMediator::PathPlannerResultCb(const actionlib::SimpleClientGoalState& sta
     path_planner_result = *result;
 }
 
+/* void WMMediator::NearestWLANResultCb(const actionlib::SimpleClientGoalState& state, const osm_bridge_ros_wrapper::NearestWLANResultConstPtr& result) */
+/* { */
+/*     nearest_wlan_result = *result; */
+/* } */
+
 //NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
 
 WMMediator::WMMediator() :
-    FTSMBase("wm_mediator", {"roscore", "route_planner", "osm_bridge_ros_wrapper"},
+    FTSMBase("wm_mediator", {"roscore", "osm_bridge_ros_wrapper"},
              {{"functional", {{"roscore", "ros/ros_master_monitor"},
-                              {"route_planner", "ros/ros_node_monitor"},
                               {"osm_bridge_ros_wrapper", "ros/ros_node_monitor"}}}}),
     nh_("~"),
     get_topology_node_server(nh_,"/get_topology_node", boost::bind(&WMMediator::get_topology_node_execute, this, _1),false),
