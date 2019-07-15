@@ -5,6 +5,11 @@ void OSM::WMQueryResultCb(const actionlib::SimpleClientGoalState& state, const o
     wm_query_result_ = *result;
 }
 
+osm_bridge_ros_wrapper::WMQueryResult OSM::getWMQueryResult()
+{
+    return wm_query_result_;
+}
+
 void OSM::pathPlannerResultCb(const actionlib::SimpleClientGoalState& state, const osm_bridge_ros_wrapper::PathPlannerResultConstPtr& result)
 {
     path_planner_result_ = *result;
@@ -19,17 +24,12 @@ void OSM::nearestWLANResultCb(const actionlib::SimpleClientGoalState& state, con
 
 OSM::OSM() :
     nh_("~"), status_(false),
-    get_topology_node_server_(nh_,"/get_topology_node", boost::bind(&OSM::getTopologyNodeExecute, this, _1),false),
     wm_query_ac_("/wm_query", true),
     wm_query_result_(),
-    get_shape_server_(nh_,"/get_shape", boost::bind(&OSM::getShapeExecute, this, _1),false),
-    get_path_planner_server_(nh_,"/get_path_plan", boost::bind(&OSM::getPathPlanExecute, this, _1),false),
     path_planner_ac_("/path_planner", true),
     path_planner_result_(),
     nearest_wlan_ac_("/nearest_wlan", true),
-    nearest_wlan_result_(),
-    get_nearest_wlan_server_(nh_,"/get_nearest_wlan", boost::bind(&OSM::getNearestWlanExecute, this, _1),false),
-    get_elevator_waypoints_server_(nh_,"/get_elevator_waypoints", boost::bind(&OSM::getElevatorWaypointsExecute, this, _1),false)
+    nearest_wlan_result_()
 {
 }
 
@@ -44,12 +44,6 @@ bool OSM::getStatus()
 
 bool OSM::start()
 {
-    get_topology_node_server_.start();
-    get_shape_server_.start();
-    get_path_planner_server_.start();
-    get_elevator_waypoints_server_.start();
-    get_nearest_wlan_server_.start();
-
     ros::param::get("~building", this->building);
     if (this->building.empty())
     {
@@ -69,41 +63,7 @@ bool OSM::start()
     return true;
 }
 
-void OSM::getTopologyNodeExecute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal)
-{
-    ropod_ros_msgs::Position topology_node;
-    ropod_ros_msgs::GetTopologyNodeResult get_topology_node_result;
-
-    if (getTopologyNode(goal->id, goal->type, topology_node))
-    {
-        ropod_ros_msgs::Position p;
-        p.x = wm_query_result_.point.x;
-        p.y = wm_query_result_.point.y;
-
-        get_topology_node_result.position = p;
-
-        get_topology_node_server_.setSucceeded(get_topology_node_result);
-    }
-    else
-        get_topology_node_server_.setAborted(get_topology_node_result);
-}
-
-
-void OSM::getShapeExecute(const ropod_ros_msgs::GetShapeGoalConstPtr& goal)
-{
-    ropod_ros_msgs::Shape shape;
-    ropod_ros_msgs::GetShapeResult get_shape_result;
-
-    if (getShape(goal->id, goal->type, shape))
-    {
-        get_shape_result.shape = shape;
-        get_shape_server_.setSucceeded(get_shape_result);
-    }
-    else
-        get_shape_server_.setAborted(get_shape_result);
-}
-
-void OSM::getPathPlanExecute(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal)
+bool OSM::getPathPlan(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal, ropod_ros_msgs::PathPlan &path_plan)
 {
     osm_bridge_ros_wrapper::PathPlannerGoal req;
     req.start_floor =  building + "_L" + std::to_string(goal->start_floor);
@@ -130,22 +90,21 @@ void OSM::getPathPlanExecute(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal
 
     path_planner_ac_.sendGoal(req, boost::bind(&OSM::pathPlannerResultCb, this, _1, _2));
     bool finished_before_timeout = path_planner_ac_.waitForResult(ros::Duration(60.0));
-    ropod_ros_msgs::GetPathPlanResult get_path_planner_result;
     if (finished_before_timeout)
     {
         if (path_planner_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
         {
-            get_path_planner_result.path_plan =  decodePathPlan(path_planner_result_.planner_areas);
-            get_path_planner_server_.setSucceeded(get_path_planner_result);
+            path_plan = decodePathPlan(path_planner_result_.planner_areas);
+            return true;
         }
         else
-            get_path_planner_server_.setAborted(get_path_planner_result);
+            return false;
     }
     else
-        get_path_planner_server_.setAborted(get_path_planner_result);
+        return false;
 }
 
-void OSM::getNearestWlanExecute(const ropod_ros_msgs::GetNearestWLANGoalConstPtr& goal)
+bool OSM::getNearestWlan(const ropod_ros_msgs::GetNearestWLANGoalConstPtr& goal, ropod_ros_msgs::Position &wlan_pos)
 {
     /* create request for osm_bridge_ros_wrapper's action server */
     osm_bridge_ros_wrapper::NearestWLANGoal req;
@@ -169,16 +128,16 @@ void OSM::getNearestWlanExecute(const ropod_ros_msgs::GetNearestWLANGoalConstPtr
     {
         if (nearest_wlan_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
         {
-            get_nearest_wlan_result.wlan_pose.x = nearest_wlan_result_.point.x;
-            get_nearest_wlan_result.wlan_pose.y = nearest_wlan_result_.point.y;
+            wlan_pos.x = nearest_wlan_result_.point.x;
+            wlan_pos.y = nearest_wlan_result_.point.y;
             /* translate point to pose */
-            get_nearest_wlan_server_.setSucceeded(get_nearest_wlan_result);
+            return true;
         }
         else
-            get_nearest_wlan_server_.setSucceeded(get_nearest_wlan_result);
+            return false;
     }
     else
-        get_nearest_wlan_server_.setAborted(get_nearest_wlan_result);
+        return false;
 }
 
 ropod_ros_msgs::PathPlan OSM::decodePathPlan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> &planner_areas)
@@ -405,28 +364,27 @@ geometry_msgs::Quaternion OSM::computeOrientation(ropod_ros_msgs::Position eleva
     return orientation;
 }
 
-void OSM::getElevatorWaypointsExecute(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal)
+bool OSM::getElevatorWaypoints(int elevator_id, int door_id, geometry_msgs::Pose &inside_pose, geometry_msgs::Pose &outside_pose)
 {
     ropod_ros_msgs::Position elevator_position, door_position;
     ropod_ros_msgs::GetElevatorWaypointsResult get_elevator_waypoints_result_;
 
-    if (getTopologyNode(goal->elevator_id, "elevator", elevator_position)
-        && getTopologyNode(goal->door_id, "door", door_position))
+    if (getTopologyNode(elevator_id, "elevator", elevator_position)
+        && getTopologyNode(door_id, "door", door_position))
     {
         ropod_ros_msgs::Position waiting_position = computeWaitingPosition(elevator_position, door_position, 1.0);
         geometry_msgs::Quaternion orientation = computeOrientation(elevator_position, waiting_position);
 
         // As per the current OSM mapping conventions this waypoint will be approximately at the center of the elevator
-        get_elevator_waypoints_result_.wp_inside.position.x = elevator_position.x;
-        get_elevator_waypoints_result_.wp_inside.position.y = elevator_position.y;
-        get_elevator_waypoints_result_.wp_inside.orientation = orientation;
+        inside_pose.position.x = elevator_position.x;
+        inside_pose.position.y = elevator_position.y;
+        inside_pose.orientation = orientation;
 
-        get_elevator_waypoints_result_.wp_outside.position.x = waiting_position.x;
-        get_elevator_waypoints_result_.wp_outside.position.y = waiting_position.y;
-        get_elevator_waypoints_result_.wp_outside.orientation = orientation;
-
-        get_elevator_waypoints_server_.setSucceeded(get_elevator_waypoints_result_);
+        outside_pose.position.x = waiting_position.x;
+        outside_pose.position.y = waiting_position.y;
+        outside_pose.orientation = orientation;
+        return true;
     }
     else
-        get_elevator_waypoints_server_.setAborted(get_elevator_waypoints_result_);
+        return false;
 }
