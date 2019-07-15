@@ -18,7 +18,7 @@ void OSM::nearestWLANResultCb(const actionlib::SimpleClientGoalState& state, con
 //NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
 
 OSM::OSM() :
-    nh_("~"),
+    nh_("~"), status_(false),
     get_topology_node_server_(nh_,"/get_topology_node", boost::bind(&OSM::getTopologyNodeExecute, this, _1),false),
     wm_query_ac_("/wm_query", true),
     wm_query_result_(),
@@ -35,6 +35,15 @@ OSM::OSM() :
 
 OSM::~OSM()
 {
+}
+
+bool OSM::getStatus()
+{
+    return status_;
+}
+
+bool OSM::start()
+{
     get_topology_node_server_.start();
     get_shape_server_.start();
     get_path_planner_server_.start();
@@ -45,6 +54,8 @@ OSM::~OSM()
     if (this->building.empty())
     {
         ROS_ERROR("Please set correct building name in world model mediator launch file");
+        status_ = false;
+        return false;
     }
     ROS_DEBUG_STREAM("Using building: " << this->building);
 
@@ -54,6 +65,8 @@ OSM::~OSM()
     path_planner_ac_.waitForServer();
     ROS_INFO_STREAM("wm_mediator waiting for nearest_wlan action server to come up...");
     nearest_wlan_ac_.waitForServer();
+    status_ = true;
+    return true;
 }
 
 void OSM::getTopologyNodeExecute(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal)

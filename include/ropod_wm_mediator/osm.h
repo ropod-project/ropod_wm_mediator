@@ -44,6 +44,7 @@ class OSM
 {
 private:
     ros::NodeHandle nh_;
+    bool status_;
     std::string building;
     actionlib::SimpleActionServer<ropod_ros_msgs::GetTopologyNodeAction> get_topology_node_server_;
     actionlib::SimpleActionServer<ropod_ros_msgs::GetShapeAction> get_shape_server_;
@@ -74,6 +75,8 @@ private:
 
 public:
     OSM();
+    bool start();
+    bool getStatus();
     virtual ~OSM();
 };
 

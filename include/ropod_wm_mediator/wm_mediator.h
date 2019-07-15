@@ -21,7 +21,7 @@ class WMMediator : public FTSMBase
 {
 private:
     ros::NodeHandle nh_;
-    
+    OSM osm_;
 
 public:
     WMMediator();

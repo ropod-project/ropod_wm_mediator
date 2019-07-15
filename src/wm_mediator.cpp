@@ -16,16 +16,12 @@ std::string WMMediator::init()
 {
     ROS_INFO_STREAM("Initialising action servers");
 
-    OSM osm;
+    // start all OSM world model related action servers
+    if (!osm_.start())
+    {
+        return FTSMTransitions::INIT_FAILED;
+    }
     
-
-    // ros::param::get("~building", this->building);
-    // if (this->building.empty())
-    // {
-    //     ROS_ERROR("Please set correct building name in world model mediator launch file");
-    //     return FTSMTransitions::INIT_FAILED;
-    // }
-
     return FTSMTransitions::INITIALISED;
 }
 
@@ -40,10 +36,11 @@ std::string WMMediator::recovering()
     {
         return FTSMTransitions::FAILED_RECOVERY;
     }
-    // if (this->building.empty()){
-    //     ros::shutdown();
-    //     return FTSMTransitions::FAILED_RECOVERY;
-    // }
+    if (osm_.getStatus())
+    {
+        ros::shutdown();
+        return FTSMTransitions::FAILED_RECOVERY;
+    }
     return FTSMTransitions::DONE_RECOVERING;
 }
 
