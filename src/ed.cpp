@@ -7,7 +7,6 @@ void ED::getObjectsResultCb(const actionlib::SimpleClientGoalState& state, const
 
 ED::ED() :
     nh_("~"), status_(false),
-    // get_objects_server_(nh_,"/get_objects", boost::bind(&ED::getObjects, this, _1),false),
     get_objects_ac_("/ed/get_objects", true), get_objects_result_()
 {
 }

@@ -8,7 +8,8 @@ WMMediator::WMMediator() :
     get_shape_server_(nh_,"/get_shape", boost::bind(&WMMediator::getShapeService, this, _1),false),
     get_path_plan_server_(nh_,"/get_path_plan", boost::bind(&WMMediator::getPathPlanService, this, _1),false),
     get_nearest_wlan_server_(nh_,"/get_nearest_wlan", boost::bind(&WMMediator::getNearestWlanService, this, _1),false),
-    get_elevator_waypoints_server_(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::getElevatorWaypointsService, this, _1),false)
+    get_elevator_waypoints_server_(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::getElevatorWaypointsService, this, _1),false),
+    get_objects_server_(nh_,"/get_objects", boost::bind(&WMMediator::getObjectsService, this, _1),false)
 {
 }
 
@@ -90,6 +91,37 @@ void WMMediator::getElevatorWaypointsService(const ropod_ros_msgs::GetElevatorWa
         get_elevator_waypoints_server_.setAborted(get_elevator_waypoints_result_);
 }
 
+void WMMediator::getObjectsService(const ropod_ros_msgs::GetObjectsGoalConstPtr& goal)
+{
+    ropod_ros_msgs::GetObjectsResult get_objects_result_;
+    ropod_ros_msgs::ObjectList objects_list;
+    geometry_msgs::Polygon area;
+
+    if (!goal->area_id.empty())
+    {
+        ropod_ros_msgs::Shape area_shape;
+        if (osm_.getShape(std::stoi(goal->area_id), "local_area", area_shape))
+        {
+            for(int  i = 0; i < area_shape.vertices.size(); i++)
+            {
+                geometry_msgs::Point32 p;
+                p.x = area_shape.vertices[i].x; 
+                p.y = area_shape.vertices[i].y;
+                p.y = 0;
+                area.points.push_back(p);
+            }
+        }
+    }
+
+    if (ed_.getObjects(area, goal->type, objects_list))
+    {
+        get_objects_result_.objects = objects_list;
+        get_objects_server_.setSucceeded(get_objects_result_);
+    }
+    else
+        get_objects_server_.setAborted(get_objects_result_);
+}
+
 
 std::string WMMediator::init()
 {
@@ -99,9 +131,9 @@ std::string WMMediator::init()
     get_path_plan_server_.start();
     get_elevator_waypoints_server_.start();
     get_nearest_wlan_server_.start();
+    get_objects_server_.start();
 
-    // start all OSM world model related action servers
-    if (!osm_.start())
+    if (!osm_.start() && !ed_.start())
     {
         return FTSMTransitions::INIT_FAILED;
     }
@@ -120,7 +152,7 @@ std::string WMMediator::recovering()
     {
         return FTSMTransitions::FAILED_RECOVERY;
     }
-    if (osm_.getStatus())
+    if (osm_.getStatus() && ed_.getStatus())
     {
         ros::shutdown();
         return FTSMTransitions::FAILED_RECOVERY;
