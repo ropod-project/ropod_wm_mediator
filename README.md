@@ -1,40 +1,31 @@
-# ropod_wm_mediator
-Makes queries to world models
+# ROPOD World model mediator
+Makes queries to world models (currently OSM for static and ED for dynamic details)
 
-#### Message definitions
-See message definitions in [ropod_com_mediator](https://git.ropod.org/ropod/communication/ropod_com_mediator/)
-[Message definitions](https://git.ropod.org/ropod/communication/ropod_com_mediator/blob/master/doc/ropod_msgs.md)
+## Message definitions
+See message definitions in [ropod_ros_msgs](https://git.ropod.org/ropod/communication/ropod_ros_msgs)
 
-#### To install python dependencies
-```
-pip install -r requirements.txt
-```
+## Services provided by the world model mediator
 
-#### OSM WM bridge
-Provides `/osm_query` action server to make queries to OSM world model
-* It requires 3 inputs:
-```
-- ids: array of element id's we are interested in
-- data_type: way,node,relation
-- query_type:
-  - 'info' - returns geometry and semantic info of all element ids (all data_types)
-  - 'area' - returns areas corresponding to given topology nodes (only for nodes)
-  - 'graph' - returns graphs containing given topology nodes (only for nodes)
-```
+#### Get shape server
+* Given the area/sub-area it returns the geometry of the area/sub-area
 
-Note: Update overpass url and global reference point in launch file before launching!
+#### Get topology node server
+* Given the area/sub-area it returns the topology node of the area/sub-area
 
-#### WM mediator
-Provides `/get_waypt_position` action server
-* Takes list of `Waypoint` ids as input
-* Returns list of `Position` in local cartesian coordinate system
+#### Get path plan server
+* Given the start and destination details, it returns the area level plan for navigation
 
-Provides `/get_waypt_shape` action server
-* Takes list of `Waypoint` ids as input
-* Returns list of `Shape`  
+#### Get nearest WiFi access points
+* Given area/sub-area/position details, it returns the nearest WiFi access points
+
+#### Get elevator waypoints
+* Given elevator and elevator door id, it returns the waypoints to wait inside and outside the elevator
+
+#### Get objects
+* Given the area id and object type, it returns objects of specified type in specified area (currently only dynamic objects)
 
 
-#### Launch
+## Launch
 
 To launch world model mediator
 ```
