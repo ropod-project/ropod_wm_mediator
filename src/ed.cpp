@@ -24,7 +24,6 @@ bool ED::start()
 {
     ROS_INFO_STREAM("wm_mediator waiting for get_cart_from_ed_ropod_bridge action server to come up...");
     get_objects_ac_.waitForServer();
-
     status_ = true;
     return true;
 }

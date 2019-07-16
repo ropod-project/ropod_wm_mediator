@@ -17,6 +17,9 @@ WMMediator::~WMMediator()
 {
 }
 
+/*
+Given the area/sub-area id from OSM WM, it returns the position of the topology node of corresponding area/sub-area
+*/
 void WMMediator::getTopologyNodeService(const ropod_ros_msgs::GetTopologyNodeGoalConstPtr& goal)
 {
     ropod_ros_msgs::Position topology_node;
@@ -32,6 +35,9 @@ void WMMediator::getTopologyNodeService(const ropod_ros_msgs::GetTopologyNodeGoa
         get_topology_node_server_.setAborted(get_topology_node_result);
 }
 
+/*
+Given the area/sub-area id from OSM WM, it returns the geometry of corresponding area/sub-area
+*/
 void WMMediator::getShapeService(const ropod_ros_msgs::GetShapeGoalConstPtr& goal)
 {
     ropod_ros_msgs::Shape shape;
@@ -46,6 +52,9 @@ void WMMediator::getShapeService(const ropod_ros_msgs::GetShapeGoalConstPtr& goa
         get_shape_server_.setAborted(get_shape_result);
 }
 
+/*
+Given start and destination information it provides the area level path plan using OSM WM
+*/
 void WMMediator::getPathPlanService(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal)
 {
     ropod_ros_msgs::PathPlan path_plan;
@@ -60,7 +69,9 @@ void WMMediator::getPathPlanService(const ropod_ros_msgs::GetPathPlanGoalConstPt
         get_path_plan_server_.setAborted(get_path_planner_result);
 }
 
-
+/*
+Given area/sub-area/position information, it returns the nearest WiFi access points from OSM WM
+*/
 void WMMediator::getNearestWlanService(const ropod_ros_msgs::GetNearestWLANGoalConstPtr& goal)
 {
     ropod_ros_msgs::Position wlan_pose;
@@ -75,6 +86,9 @@ void WMMediator::getNearestWlanService(const ropod_ros_msgs::GetNearestWLANGoalC
         get_nearest_wlan_server_.setAborted(get_neareast_wlan_result);
 }
 
+/*
+Given the elevator and door id from OSM WM, it returns the waypoints to wait inside and outside the elevator 
+*/
 void WMMediator::getElevatorWaypointsService(const ropod_ros_msgs::GetElevatorWaypointsGoalConstPtr& goal)
 {
     ropod_ros_msgs::GetElevatorWaypointsResult get_elevator_waypoints_result_;
@@ -91,6 +105,9 @@ void WMMediator::getElevatorWaypointsService(const ropod_ros_msgs::GetElevatorWa
         get_elevator_waypoints_server_.setAborted(get_elevator_waypoints_result_);
 }
 
+/*
+Currently just returns the dynamic objects from ed in specified OSM area 
+*/
 void WMMediator::getObjectsService(const ropod_ros_msgs::GetObjectsGoalConstPtr& goal)
 {
     ropod_ros_msgs::GetObjectsResult get_objects_result_;
@@ -107,7 +124,7 @@ void WMMediator::getObjectsService(const ropod_ros_msgs::GetObjectsGoalConstPtr&
                 geometry_msgs::Point32 p;
                 p.x = area_shape.vertices[i].x; 
                 p.y = area_shape.vertices[i].y;
-                p.y = 0;
+                p.z = 0;
                 area.points.push_back(p);
             }
         }
@@ -125,6 +142,11 @@ void WMMediator::getObjectsService(const ropod_ros_msgs::GetObjectsGoalConstPtr&
 
 std::string WMMediator::init()
 {
+    if (!osm_.start() && !ed_.start())
+    {
+        return FTSMTransitions::INIT_FAILED;
+    }
+
     ROS_INFO_STREAM("Initialising action servers");
     get_topology_node_server_.start();
     get_shape_server_.start();
@@ -132,11 +154,6 @@ std::string WMMediator::init()
     get_elevator_waypoints_server_.start();
     get_nearest_wlan_server_.start();
     get_objects_server_.start();
-
-    if (!osm_.start() && !ed_.start())
-    {
-        return FTSMTransitions::INIT_FAILED;
-    }
     
     return FTSMTransitions::INITIALISED;
 }

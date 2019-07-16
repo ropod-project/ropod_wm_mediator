@@ -20,8 +20,6 @@ void OSM::nearestWLANResultCb(const actionlib::SimpleClientGoalState& state, con
     nearest_wlan_result_ = *result;
 }
 
-//NOTE: http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
-
 OSM::OSM() :
     nh_("~"), status_(false),
     wm_query_ac_("/wm_query", true),
