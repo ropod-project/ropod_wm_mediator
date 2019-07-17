@@ -142,7 +142,12 @@ void WMMediator::getObjectsService(const ropod_ros_msgs::GetObjectsGoalConstPtr&
 
 std::string WMMediator::init()
 {
-    if (!osm_.start() && !ed_.start())
+    if (!osm_.start())
+    {
+        return FTSMTransitions::INIT_FAILED;
+    }
+
+    if (!ed_.start())
     {
         return FTSMTransitions::INIT_FAILED;
     }

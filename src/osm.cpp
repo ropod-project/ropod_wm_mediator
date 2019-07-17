@@ -51,14 +51,29 @@ bool OSM::start()
     }
     ROS_DEBUG_STREAM("Using building: " << this->building);
 
+    bool wm_query_server_timeout_status, path_planner_server_timeout_status, wlan_server_timeout_status;
+    
     ROS_INFO_STREAM("wm_mediator waiting for wm_query action server to come up...");
-    wm_query_ac_.waitForServer();
+    wm_query_server_timeout_status = wm_query_ac_.waitForServer(ros::Duration(10.0));
+    
     ROS_INFO_STREAM("wm_mediator waiting for path_planner action server to come up...");
-    path_planner_ac_.waitForServer();
+    path_planner_server_timeout_status = path_planner_ac_.waitForServer(ros::Duration(10.0));
+
     ROS_INFO_STREAM("wm_mediator waiting for nearest_wlan action server to come up...");
-    nearest_wlan_ac_.waitForServer();
-    status_ = true;
-    return true;
+    wlan_server_timeout_status = nearest_wlan_ac_.waitForServer(ros::Duration(10.0));
+
+    if(wm_query_server_timeout_status && path_planner_server_timeout_status && path_planner_server_timeout_status) 
+    {
+        status_ = true;
+        return true;
+    }
+    else
+    {
+        ROS_ERROR("Couldn't connect one or multiple action servers provided by OSM bridge");
+        ROS_ERROR("Status of action servers - WM Query: %d, Path planner: %d, WLAN: %d", wm_query_server_timeout_status, 
+                   path_planner_server_timeout_status, wlan_server_timeout_status);
+        return false;
+    }
 }
 
 bool OSM::getPathPlan(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal, ropod_ros_msgs::PathPlan &path_plan)

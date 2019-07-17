@@ -22,10 +22,15 @@ bool ED::getStatus()
 
 bool ED::start()
 {
-    ROS_INFO_STREAM("wm_mediator waiting for get_cart_from_ed_ropod_bridge action server to come up...");
-    get_objects_ac_.waitForServer();
-    status_ = true;
-    return true;
+    ROS_INFO_STREAM("wm_mediator waiting for /ed/get_objects action server to come up...");
+    bool connected_before_timeout = get_objects_ac_.waitForServer(ros::Duration(10.0));
+    if(connected_before_timeout) 
+    {
+        status_ = true;
+        return true;
+    }
+    else
+        return false;
 }
 
 bool ED::getObjects(geometry_msgs::Polygon area, std::string type, std::vector<ropod_ros_msgs::Object> &objects_list)
