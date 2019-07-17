@@ -111,7 +111,7 @@ Currently just returns the dynamic objects from ed in specified OSM area
 void WMMediator::getObjectsService(const ropod_ros_msgs::GetObjectsGoalConstPtr& goal)
 {
     ropod_ros_msgs::GetObjectsResult get_objects_result_;
-    ropod_ros_msgs::ObjectList objects_list;
+    std::vector<ropod_ros_msgs::Object> objects_list;
     geometry_msgs::Polygon area;
 
     if (!goal->area_id.empty())

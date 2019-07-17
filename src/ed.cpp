@@ -28,7 +28,7 @@ bool ED::start()
     return true;
 }
 
-bool ED::getObjects(geometry_msgs::Polygon area, std::string type, ropod_ros_msgs::ObjectList &objects_list)
+bool ED::getObjects(geometry_msgs::Polygon area, std::string type, std::vector<ropod_ros_msgs::Object> &objects_list)
 {
     ropod_ros_msgs::GetObjectsGoal req;
     req.area = area;

@@ -39,7 +39,7 @@ public:
     bool getStatus();
     virtual ~ED();
 
-    bool getObjects(geometry_msgs::Polygon area, std::string type, ropod_ros_msgs::ObjectList &objects_list);
+    bool getObjects(geometry_msgs::Polygon area, std::string type, std::vector<ropod_ros_msgs::Object> &objects_list);
 
 
 };
