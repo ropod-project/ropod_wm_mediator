@@ -58,9 +58,9 @@ private:
     void pathPlannerResultCb(const actionlib::SimpleClientGoalState& state,const osm_bridge_ros_wrapper::PathPlannerResultConstPtr& result);
     void nearestWLANResultCb(const actionlib::SimpleClientGoalState& state,const osm_bridge_ros_wrapper::NearestWLANResultConstPtr& result);
     ropod_ros_msgs::PathPlan decodePathPlan(const std::vector<osm_bridge_ros_wrapper::PlannerArea> &planner_areas);
-    ropod_ros_msgs::Position computeWaitingPosition(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position door, double distance_from_door);
+    ropod_ros_msgs::Position computeWaitingPosition(const ropod_ros_msgs::Position &elevator, const ropod_ros_msgs::Position &door, double distance_from_door);
     double wrapToPi(double angle);
-    geometry_msgs::Quaternion computeOrientation(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position waiting_position);
+    geometry_msgs::Quaternion computeOrientation(const ropod_ros_msgs::Position &elevator, const ropod_ros_msgs::Position &waiting_position);
 
 public:
     OSM();
@@ -68,8 +68,8 @@ public:
     bool getStatus();
     virtual ~OSM();
 
-    bool getTopologyNode(int id, std::string type, ropod_ros_msgs::Position &position);
-    bool getShape(int id, std::string type, ropod_ros_msgs::Shape &shape);
+    bool getTopologyNode(int id, const std::string &type, ropod_ros_msgs::Position &position);
+    bool getShape(int id, const std::string &type, ropod_ros_msgs::Shape &shape);
     bool getPathPlan(const ropod_ros_msgs::GetPathPlanGoalConstPtr& goal, ropod_ros_msgs::PathPlan &path_plan);
     bool getNearestWlan(const ropod_ros_msgs::GetNearestWLANGoalConstPtr& goal, ropod_ros_msgs::Position &wlan_pos);
     bool getElevatorWaypoints(int elevator_id, int door_id, geometry_msgs::Pose &inside_pose, geometry_msgs::Pose &outside_pose);

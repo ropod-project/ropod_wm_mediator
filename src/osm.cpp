@@ -22,11 +22,11 @@ void OSM::nearestWLANResultCb(const actionlib::SimpleClientGoalState& state, con
 
 OSM::OSM() :
     nh_("~"), status_(false),
-    wm_query_ac_("/wm_query", true),
+    wm_query_ac_("wm_query", true),
     wm_query_result_(),
-    path_planner_ac_("/path_planner", true),
+    path_planner_ac_("path_planner", true),
     path_planner_result_(),
-    nearest_wlan_ac_("/nearest_wlan", true),
+    nearest_wlan_ac_("nearest_wlan", true),
     nearest_wlan_result_()
 {
 }
@@ -214,7 +214,7 @@ ropod_ros_msgs::PathPlan OSM::decodePathPlan(const std::vector<osm_bridge_ros_wr
     return path_plan;
 }
 
-bool OSM::getTopologyNode(int id, std::string type, ropod_ros_msgs::Position &position)
+bool OSM::getTopologyNode(int id, const std::string &type, ropod_ros_msgs::Position &position)
 {
     bool finished_before_timeout;
 
@@ -278,7 +278,7 @@ bool OSM::getTopologyNode(int id, std::string type, ropod_ros_msgs::Position &po
 }
 
 
-bool OSM::getShape(int id, std::string type, ropod_ros_msgs::Shape &shape)
+bool OSM::getShape(int id, const std::string &type, ropod_ros_msgs::Shape &shape)
 {
     osm_bridge_ros_wrapper::WMQueryGoal req;
     req.id = id;
@@ -343,7 +343,7 @@ bool OSM::getShape(int id, std::string type, ropod_ros_msgs::Shape &shape)
     return false;
 }
 
-ropod_ros_msgs::Position OSM::computeWaitingPosition(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position door,
+ropod_ros_msgs::Position OSM::computeWaitingPosition(const ropod_ros_msgs::Position &elevator, const ropod_ros_msgs::Position &door,
   double distance_from_door)
 {
     ropod_ros_msgs::Position waiting_position;
@@ -365,7 +365,7 @@ double OSM::wrapToPi(double angle)
     return angle;
 }
 
-geometry_msgs::Quaternion OSM::computeOrientation(ropod_ros_msgs::Position elevator, ropod_ros_msgs::Position waiting_position)
+geometry_msgs::Quaternion OSM::computeOrientation(const ropod_ros_msgs::Position &elevator, const ropod_ros_msgs::Position &waiting_position)
 {
     double ang = atan2(elevator.y - waiting_position.y, elevator.x - waiting_position.x);
     tf::Quaternion q = tf::createQuaternionFromRPY(0.0, 0.0, ang);

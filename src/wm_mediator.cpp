@@ -176,10 +176,13 @@ std::string WMMediator::recovering()
     }
     if (osm_.getStatus() && ed_.getStatus())
     {
+        return FTSMTransitions::DONE_RECOVERING;
+    }
+    else
+    {
         ros::shutdown();
         return FTSMTransitions::FAILED_RECOVERY;
     }
-    return FTSMTransitions::DONE_RECOVERING;
 }
 
 

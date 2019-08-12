@@ -7,7 +7,7 @@ void ED::getObjectsResultCb(const actionlib::SimpleClientGoalState& state, const
 
 ED::ED() :
     nh_("~"), status_(false),
-    get_objects_ac_("/ed/get_objects", true), get_objects_result_()
+    get_objects_ac_("get_objects", true), get_objects_result_()
 {
 }
 
@@ -33,7 +33,7 @@ bool ED::start()
         return false;
 }
 
-bool ED::getObjects(geometry_msgs::Polygon area, std::string type, std::vector<ropod_ros_msgs::Object> &objects_list)
+bool ED::getObjects(const geometry_msgs::Polygon& area, const std::string& type, std::vector<ropod_ros_msgs::Object> &objects_list)
 {
     ropod_ros_msgs::GetObjectsGoal req;
     req.area = area;
