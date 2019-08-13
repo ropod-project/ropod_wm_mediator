@@ -3,5 +3,9 @@
     <arg name="building" default="$(optenv BUILDING AMK)"/>
     <node name="ropod_wm_mediator" pkg="ropod_wm_mediator" type="ropod_wm_mediator" output="screen">
         <param name="building" value="$(arg building)" />
+        <remap from="~get_objects" to="/ed/get_objects" />
+        <remap from="~wm_query" to="/wm_query" />
+        <remap from="~path_planner" to="/path_planner" />
+        <remap from="~nearest_wlan" to="/nearest_wlan" />
     </node>
 </launch>

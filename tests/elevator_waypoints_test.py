@@ -4,9 +4,10 @@ PACKAGE = 'ropod_wm_mediator'
 NODE = 'elevator_waypoints_test_node'
 
 import rospy
-from ropod_ros_msgs.msg import *
-from osm_bridge_ros_wrapper.msg import *
+
+from ropod_ros_msgs.msg import GetElevatorWaypointsAction, GetElevatorWaypointsGoal
 from actionlib import SimpleActionClient
+
 
 class ElevatorWaypointsTest(object):
 
@@ -15,12 +16,16 @@ class ElevatorWaypointsTest(object):
     def __init__(self):
         SERVER = "/get_elevator_waypoints"
         self.client = SimpleActionClient(SERVER, GetElevatorWaypointsAction)
-        connected = self.client.wait_for_server()
+        self.client.wait_for_server()
         rospy.loginfo("Successfully connected to elevator waypoints server")
-        
-        # req = GetElevatorWaypointsGoal(elevator_id = 121, door_id = 196)          # BRSU
-        req = GetElevatorWaypointsGoal(elevator_id = 5, door_id = 161)            # AMK
-        
+
+        # BRSU
+        # req = GetElevatorWaypointsGoal(elevator_id = 121, door_id = 196)
+
+        # AMK
+        req = GetElevatorWaypointsGoal(
+            elevator_id=5, door_id=161)
+
         self.client.send_goal(req, done_cb=self.cb)
         self.client.wait_for_result()
 
@@ -35,7 +40,6 @@ class ElevatorWaypointsTest(object):
             rospy.loginfo("Test successfully passed")
         except Exception as e:
             rospy.logerr("Test failed")
-
 
 
 if __name__ == "__main__":
