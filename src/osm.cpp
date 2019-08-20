@@ -269,6 +269,7 @@ bool OSM::getTopologyNode(int id, const std::string &type, ropod_ros_msgs::Posit
                 {
                     position.x = wm_query_result_.point.x;
                     position.y = wm_query_result_.point.y;
+                    position.id = wm_query_result_.point.id;
                     return true;
                 }
             }
@@ -333,6 +334,7 @@ bool OSM::getShape(int id, const std::string &type, ropod_ros_msgs::Shape &shape
                         ropod_ros_msgs::Position p;
                         p.x = it_pt->x;
                         p.y = it_pt->y;
+                        p.id = it_pt->id;
                         shape.vertices.push_back(p);
                     }
                     return true;
