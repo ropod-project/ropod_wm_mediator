@@ -7,7 +7,7 @@ void ED::getObjectsResultCb(const actionlib::SimpleClientGoalState& state, const
 
 ED::ED() :
     nh_("~"), status_(false),
-    get_objects_ac_("get_objects", true), get_objects_result_()
+    get_objects_ac_("/ed/get_objects", true), get_objects_result_()
 {
 }
 
