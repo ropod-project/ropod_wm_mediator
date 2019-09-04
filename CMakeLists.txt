@@ -46,13 +46,13 @@ catkin_package(CATKIN_DEPENDS
 # Mediator
 ########################################################################
 
-add_library(osm ${PROJECT_SOURCE_DIR}/src/osm.cpp)
-add_dependencies(osm ropod_ros_msgs_generate_messages_cpp)
-target_link_libraries(osm ${LIBS} ${catkin_LIBRARIES})
+add_library(osm_adapter ${PROJECT_SOURCE_DIR}/src/osm.cpp)
+add_dependencies(osm_adapter ropod_ros_msgs_generate_messages_cpp)
+target_link_libraries(osm_adapter ${LIBS} ${catkin_LIBRARIES})
 
-add_library(ed ${PROJECT_SOURCE_DIR}/src/ed.cpp)
-add_dependencies(ed ropod_ros_msgs_generate_messages_cpp)
-target_link_libraries(ed ${LIBS} ${catkin_LIBRARIES})
+add_library(ed_adapter ${PROJECT_SOURCE_DIR}/src/ed.cpp)
+add_dependencies(ed_adapter ropod_ros_msgs_generate_messages_cpp)
+target_link_libraries(ed_adapter ${LIBS} ${catkin_LIBRARIES})
 
 add_executable(ropod_wm_mediator 
     ${PROJECT_SOURCE_DIR}/src/wm_mediator.cpp
@@ -61,7 +61,7 @@ add_executable(ropod_wm_mediator
     /opt/ropod/ftsm/cppftsm/src/ftsm.cpp
 )
 add_dependencies(ropod_wm_mediator ropod_ros_msgs_generate_messages_cpp ${ropod_wm_mediator_EXPORTED_TARGETS})
-target_link_libraries(ropod_wm_mediator ${LIBS}  ${catkin_LIBRARIES} ${FTSM_LIBRARIES} yaml-cpp osm ed)
+target_link_libraries(ropod_wm_mediator ${LIBS}  ${catkin_LIBRARIES} ${FTSM_LIBRARIES} yaml-cpp osm_adapter ed_adapter)
 
 
 
