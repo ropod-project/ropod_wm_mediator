@@ -114,10 +114,20 @@ void WMMediator::getObjectsService(const ropod_ros_msgs::GetObjectsGoalConstPtr&
     std::vector<ropod_ros_msgs::Object> objects_list;
     geometry_msgs::Polygon area;
 
+    std::string area_type;
+    if (goal->area_type.empty())
+    {
+        area_type = "local_area";
+    }
+    else
+    {
+        area_type = goal->area_type;
+    }
+
     if (!goal->area_id.empty())
     {
         ropod_ros_msgs::Shape area_shape;
-        if (osm_.getShape(std::stoi(goal->area_id), "local_area", area_shape))
+        if (osm_.getShape(std::stoi(goal->area_id), area_type, area_shape))
         {
             for(int  i = 0; i < area_shape.vertices.size(); i++)
             {
