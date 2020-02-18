@@ -21,7 +21,7 @@ using namespace ftsm;
 
 class WMMediator : public FTSMBase
 {
-private:
+protected:
     ros::NodeHandle nh_;
     OSM osm_;
     ED ed_;

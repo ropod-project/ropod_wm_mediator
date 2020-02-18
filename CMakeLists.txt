@@ -56,14 +56,10 @@ target_link_libraries(ed_adapter ${LIBS} ${catkin_LIBRARIES})
 
 add_executable(ropod_wm_mediator 
     ${PROJECT_SOURCE_DIR}/src/wm_mediator.cpp
+    ${PROJECT_SOURCE_DIR}/src/wm_mediator_sim.cpp
     ${HEADER_FILES}
     /opt/ropod/ropod_common/ropodcpp/ftsm/src/ftsm_base.cpp
     /opt/ropod/ftsm/cppftsm/src/ftsm.cpp
 )
 add_dependencies(ropod_wm_mediator ropod_ros_msgs_generate_messages_cpp ${ropod_wm_mediator_EXPORTED_TARGETS})
 target_link_libraries(ropod_wm_mediator ${LIBS}  ${catkin_LIBRARIES} ${FTSM_LIBRARIES} yaml-cpp osm_adapter ed_adapter)
-
-
-
-
-

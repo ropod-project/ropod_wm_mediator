@@ -210,22 +210,3 @@ std::string WMMediator::recovering()
         return FTSMTransitions::FAILED_RECOVERY;
     }
 }
-
-
-int main(int argc, char **argv)
-{
-    ros::init(argc, argv, "WM_mediator");
-    ros::NodeHandle node;
-    WMMediator wm_mediator;
-    ROS_INFO("World Model mediator ready!");
-
-    ros::Rate loop_rate(10);
-    wm_mediator.run();
-    while(ros::ok())
-    {
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-
-    return 0;
-}
