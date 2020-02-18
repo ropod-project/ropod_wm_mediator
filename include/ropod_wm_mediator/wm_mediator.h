@@ -42,9 +42,10 @@ private:
 
 public:
     WMMediator();
+    WMMediator(bool debug);
 
     /* FTSM base functions */
-    std::string init();
+    virtual std::string init();
     std::string running();
     std::string recovering();
 

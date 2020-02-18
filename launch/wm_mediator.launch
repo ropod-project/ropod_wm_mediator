@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="building" default="$(optenv BUILDING AMK)"/>
-    <node name="ropod_wm_mediator" pkg="ropod_wm_mediator" type="ropod_wm_mediator" output="screen">
+    <arg name="debug_mode" default="false"/>
+
+    <node name="ropod_wm_mediator" pkg="ropod_wm_mediator" type="ropod_wm_mediator" output="screen" args="debug_mode=$(arg debug_mode)">
         <param name="building" value="$(arg building)" />
         <remap from="~get_objects" to="/ed/get_objects" />
         <remap from="~wm_query" to="/wm_query" />
