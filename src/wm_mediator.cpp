@@ -13,6 +13,22 @@ WMMediator::WMMediator() :
 {
 }
 
+WMMediator::WMMediator(bool debugMode) :
+    FTSMBase("wm_mediator", {"roscore", "osm_bridge_ros_wrapper"},
+             {{"functional", {{"roscore", "ros/ros_master_monitor"},
+                              {"osm_bridge_ros_wrapper", "ros/ros_node_monitor"}}}}, 
+             1, "robot_store", 27017, "components", "status",
+             "component_sm_states", debugMode), 
+    nh_("~"),
+    get_topology_node_server_(nh_,"/get_topology_node", boost::bind(&WMMediator::getTopologyNodeService, this, _1),false),
+    get_shape_server_(nh_,"/get_shape", boost::bind(&WMMediator::getShapeService, this, _1),false),
+    get_path_plan_server_(nh_,"/get_path_plan", boost::bind(&WMMediator::getPathPlanService, this, _1),false),
+    get_nearest_wlan_server_(nh_,"/get_nearest_wlan", boost::bind(&WMMediator::getNearestWlanService, this, _1),false),
+    get_elevator_waypoints_server_(nh_,"/get_elevator_waypoints", boost::bind(&WMMediator::getElevatorWaypointsService, this, _1),false),
+    get_objects_server_(nh_,"/get_objects", boost::bind(&WMMediator::getObjectsService, this, _1),false)
+{
+}
+
 WMMediator::~WMMediator()
 {
 }
@@ -193,23 +209,4 @@ std::string WMMediator::recovering()
         ros::shutdown();
         return FTSMTransitions::FAILED_RECOVERY;
     }
-}
-
-
-int main(int argc, char **argv)
-{
-    ros::init(argc, argv, "WM_mediator");
-    ros::NodeHandle node;
-    WMMediator wm_mediator;
-    ROS_INFO("World Model mediator ready!");
-
-    ros::Rate loop_rate(10);
-    wm_mediator.run();
-    while(ros::ok())
-    {
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-
-    return 0;
 }

@@ -21,7 +21,7 @@ using namespace ftsm;
 
 class WMMediator : public FTSMBase
 {
-private:
+protected:
     ros::NodeHandle nh_;
     OSM osm_;
     ED ed_;
@@ -42,9 +42,10 @@ private:
 
 public:
     WMMediator();
+    WMMediator(bool debug);
 
     /* FTSM base functions */
-    std::string init();
+    virtual std::string init();
     std::string running();
     std::string recovering();
 

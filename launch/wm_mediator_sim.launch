@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="building" default="BRSU"/>
+    <arg name="debug_mode" default="false"/>
+    <arg name="sim_mode" default="true"/>
+
+    <node name="ropod_wm_mediator" pkg="ropod_wm_mediator" type="ropod_wm_mediator" output="screen" args="debug_mode=$(arg debug_mode) sim_mode=$(arg sim_mode)">
+        <param name="building" value="$(arg building)" />
+        <remap from="/get_topology_node" to="get_topology_node" />
+        <remap from="/get_shape" to="get_shape" />
+    </node>
+</launch>
